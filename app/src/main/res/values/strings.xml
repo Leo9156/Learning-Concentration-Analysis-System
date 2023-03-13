@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">Learning Assistance</string>
+    <string name="no_face_detected_info">No Faces Detected!</string>
+    <string name="eulerx">EulerX: </string>
+    <string name="eulery">EulerY: </string>
+    <string name="eulerz">EulerZ: </string>
+    <string name="right_eye_open">Right eye open: </string>
+    <string name="left_eye_open">Left eye open:  </string>
+    <string name="face_detector_latency">Face detector latency: </string>
+    <string name="drowsiness_state_awake">State: Awake (%1$.2f)</string>
+    <string name="drowsiness_state_tired">State: Tired (%1$.2f)</string>
+    <string name="drowsiness_state_exhausted">State: Exhausted (%1$.2f)</string>
+    <string name="drowsiness_timer">%1$d</string>
+</resources>
