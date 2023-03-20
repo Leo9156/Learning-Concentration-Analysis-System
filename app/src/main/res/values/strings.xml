@@ -11,4 +11,7 @@
     <string name="drowsiness_state_tired">State: Tired (%1$.2f)</string>
     <string name="drowsiness_state_exhausted">State: Exhausted (%1$.2f)</string>
     <string name="drowsiness_timer">%1$d</string>
+    <string name="drowsiness_alert_dialog_title">WARNING!</string>
+    <string name="drowsiness_alert_dialog_msg">You appear to be fatigue. Don\'t fall alseep! If you want to close the alarm, please click the close button below.</string>
+    <string name="close">Close</string>
 </resources>

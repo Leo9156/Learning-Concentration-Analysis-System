@@ -2,13 +2,19 @@ package com.example.learningassistance.facedetection
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.media.MediaPlayer
 import android.os.Build
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.util.Log
 import android.widget.TextView
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
+import androidx.core.content.ContextCompat.getSystemService
 import com.example.learningassistance.R
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.Face
 import com.google.mlkit.vision.face.FaceDetection
@@ -29,10 +35,14 @@ class FaceDetectionProcessor(
 
     private var totalFrameCount = 0
     private var closeEyesFrameCount = 0
+    private var isAlarmPlaying = false
+    private lateinit var mediaPlayer: MediaPlayer
+    private var isVibrating = false
+    private val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
     private var startDrowsinessTimerMs = System.currentTimeMillis()
 
     private val options = FaceDetectorOptions.Builder()
-        .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
+        .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_FAST)
         .setContourMode(FaceDetectorOptions.CONTOUR_MODE_ALL)
         .setClassificationMode(FaceDetectorOptions.CLASSIFICATION_MODE_ALL)
         .build()
@@ -53,6 +63,7 @@ class FaceDetectionProcessor(
             val result = detector.process(image)
                 .addOnSuccessListener { faces ->
                     Log.d(TAG, "Number of face detected: ${faces.size}")
+                    totalFrameCount++
 
                     // Calculate the processing time
                     val detectionEndTimeMs = System.currentTimeMillis()
@@ -60,6 +71,12 @@ class FaceDetectionProcessor(
 
                     if (faces.size == 0) {
                         setNoFaceMsg()
+
+                        // Reset the variables of drowsiness detection
+                        totalFrameCount = 0
+                        closeEyesFrameCount = 0
+                        startDrowsinessTimerMs = System.currentTimeMillis()
+
                     }
 
                     // Set the information about the face graphic overlay
@@ -77,16 +94,12 @@ class FaceDetectionProcessor(
                         setEulerAnglesMsg(rotX, rotY, rotZ)
 
                         //Set the open probability of each eye on the textView
-                        if (rightEyeOpenProb != null) {
+                        if (rightEyeOpenProb != null && leftEyeOpenProb != null) {
                             setRightEyeMsg(rightEyeOpenProb)
-                        }
-                        if (leftEyeOpenProb != null) {
                             setLeftEyeMsg(leftEyeOpenProb)
-                        }
+                            drowsinessDetection(rightEyeOpenProb.toFloat(), leftEyeOpenProb.toFloat())
 
-                        // Drwosiness detection
-                        totalFrameCount++
-                        drowsinessDetection(rightEyeOpenProb!!.toFloat(), leftEyeOpenProb!!.toFloat())
+                        }
                     }
                 }
                 .addOnFailureListener { e ->
@@ -120,9 +133,35 @@ class FaceDetectionProcessor(
             } else if (PERCLOS > 0.15 && PERCLOS <= 0.3) {
                 tvDrowsinessMsg.text = context.getString(R.string.drowsiness_state_tired, PERCLOS)
                 tvDrowsinessMsg.setTextColor(context.getColor(R.color.orange))
+                Toast.makeText(context, "You are tired!", Toast.LENGTH_LONG).show()
             } else {
                 tvDrowsinessMsg.text = context.getString(R.string.drowsiness_state_exhausted, PERCLOS)
                 tvDrowsinessMsg.setTextColor(context.getColor(R.color.red))
+
+                if (!isAlarmPlaying) {
+                    mediaPlayer = MediaPlayer.create(context, R.raw.alarm_sound)
+                    mediaPlayer.isLooping = true
+                    mediaPlayer.start()
+                    isAlarmPlaying = true
+                }
+
+                if (!isVibrating) {
+                    if (vibrator.hasVibrator()) {
+                        val pattern = longArrayOf(0, 1000)
+                        isVibrating = true
+
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            vibrator.vibrate(VibrationEffect.createWaveform(
+                                pattern,
+                                0
+                            ))
+                        } else {
+                            vibrator.vibrate(pattern, 0)
+                        }
+                    }
+                }
+
+                showAlertDialog(context)
             }
 
             // Reset the variables
@@ -130,6 +169,25 @@ class FaceDetectionProcessor(
             closeEyesFrameCount = 0
             startDrowsinessTimerMs = System.currentTimeMillis()
         }
+    }
+
+    private fun showAlertDialog(context: Context) {
+        MaterialAlertDialogBuilder(context)
+            .setTitle(R.string.drowsiness_alert_dialog_title)
+            .setIcon(R.drawable.ic_warning)
+            .setMessage(context.getString(R.string.drowsiness_alert_dialog_msg))
+            .setPositiveButton(R.string.close) { dialog, _ ->
+                mediaPlayer.stop()
+                mediaPlayer.release()
+                isAlarmPlaying = false
+
+                vibrator.cancel()
+                isVibrating = false
+
+                dialog.dismiss()
+            }
+            .setCancelable(false)
+            .show()
     }
 
     private fun processTime(detectionStartTimeMs: Long, detectionEndTimeMs: Long) {

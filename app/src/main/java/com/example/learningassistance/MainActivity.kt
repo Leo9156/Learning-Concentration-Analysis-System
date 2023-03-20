@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.util.Log
 import android.util.Size
 import android.view.Surface
+import android.view.View
 import android.widget.TextView
 import android.widget.Toast
 import androidx.camera.core.CameraSelector
@@ -39,8 +40,8 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
         viewFinder = findViewById(R.id.viewFinder)
-        viewFinder.scaleType = PreviewView.ScaleType.FILL_CENTER
         faceGraphicOverlayView = findViewById(R.id.faceGraphicOverlay)
         textViewEulerX = findViewById(R.id.textViewEulerX)
         textViewEulerY = findViewById(R.id.textViewEulerY)
@@ -87,7 +88,7 @@ class MainActivity : AppCompatActivity() {
             val cameraProvider: ProcessCameraProvider = cameraFutureProvider.get()
 
             // Select back camera as a default
-            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+            val cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
 
             val orientation = this.resources.configuration.orientation
             val targetSolution = if (orientation == 1) {
