@@ -2,129 +2,94 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/constraintLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:keepScreenOn="true"
     tools:context=".MainActivity">
 
-    <androidx.camera.view.PreviewView
-        android:id="@+id/viewFinder"
+    <ImageView
+        android:id="@+id/imageViewBackground"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-    </androidx.camera.view.PreviewView>
-
-    <TextView
-        android:id="@+id/textViewEulerX"
-        style="@style/Widget.LearningAssistance.TextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="16dp"
-        android:textColor="@color/lime_green"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:text="TextView" />
-
-    <TextView
-        android:id="@+id/textViewEulerY"
-        style="@style/Widget.LearningAssistance.TextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:textColor="@color/lime_green"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textViewEulerX"
-        tools:text="TextView" />
-
-    <TextView
-        android:id="@+id/textViewEulerZ"
-        style="@style/Widget.LearningAssistance.TextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:textColor="@color/lime_green"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textViewEulerY"
-        tools:text="TextView" />
-
-    <TextView
-        android:id="@+id/textViewRightEyeOpenProb"
-        style="@style/Widget.LearningAssistance.TextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:textColor="@color/blue_500"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textViewEulerZ"
-        tools:text="TextView" />
-
-    <TextView
-        android:id="@+id/textViewLeftEyeOpenProb"
-        style="@style/Widget.LearningAssistance.TextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:textColor="@color/blue_500"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textViewRightEyeOpenProb"
-        tools:text="TextView" />
-
-    <TextView
-        android:id="@+id/textViewLatencyTime"
-        style="@style/Widget.LearningAssistance.TextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textViewLeftEyeOpenProb"
-        android:textStyle="bold"
-        android:textColor="@color/orange"
-        android:textSize="16sp"
-        tools:text="TextView"/>
-
-    <TextView
-        android:id="@+id/textViewDrowsinessMsg"
-        style="@style/Widget.LearningAssistance.TextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="8dp"
-        android:textColor="@android:color/holo_red_dark"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toStartOf="@id/textViewDrowsinessTimer"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:text="TextView" />
-
-    <TextView
-        android:id="@+id/textViewDrowsinessTimer"
-        style="@style/Widget.LearningAssistance.TextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="8dp"
-        android:textColor="@color/blue_500"
-        android:textSize="16sp"
-        android:textStyle="bold"
+        android:alpha="0.75"
+        android:scaleType="centerCrop"
+        android:src="@drawable/background3"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:text="TextView" />
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-    <com.example.learningassistance.facedetection.FaceGraphicOverlayView
-        android:id="@+id/faceGraphicOverlay"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+
+    <TextView
+        android:id="@+id/learningTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="@string/_60_00"
+        android:textSize="54sp"
+        app:layout_constraintBottom_toTopOf="@+id/timePicker"
+        app:layout_constraintEnd_toEndOf="@id/guideline2"
+        app:layout_constraintStart_toStartOf="@id/guideline"
+        app:layout_constraintTop_toBottomOf="@+id/imageViewBackground"
+        app:layout_constraintVertical_bias="0.5" />
+
+    <NumberPicker
+        android:id="@+id/timePicker"
+        android:layout_width="160dp"
+        android:layout_height="104dp"
+        android:layout_marginTop="16dp"
+        android:fadingEdge="vertical"
+        android:theme="@style/NumberPickerTheme"
+        app:layout_constraintBottom_toTopOf="@+id/buttonStart"
+        app:layout_constraintEnd_toEndOf="@id/guideline2"
+        app:layout_constraintStart_toStartOf="@id/guideline"
+        app:layout_constraintTop_toBottomOf="@+id/learningTime"
+        app:layout_constraintVertical_bias="0.5" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/buttonStart"
+        android:layout_width="106dp"
+        android:layout_height="51dp"
+        android:layout_marginTop="16dp"
+        android:text="@string/start_your_study"
+        android:textColor="@color/black"
+        app:backgroundTint="#EEEBEA"
+        app:cornerRadius="50dp"
+        app:iconTint="#8F8F8F"
+        app:layout_constraintBottom_toTopOf="@+id/imageViewBackground"
+        app:layout_constraintEnd_toEndOf="@id/guideline2"
+        app:layout_constraintStart_toStartOf="@id/guideline"
+        app:layout_constraintTop_toBottomOf="@+id/timePicker"
+        app:layout_constraintVertical_bias="0.5" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.19" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.85" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.255" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.75" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

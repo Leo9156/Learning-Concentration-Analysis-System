@@ -1,17 +1,28 @@
 <resources>
     <string name="app_name">Learning Assistance</string>
     <string name="no_face_detected_info">No Faces Detected!</string>
-    <string name="eulerx">EulerX: </string>
-    <string name="eulery">EulerY: </string>
-    <string name="eulerz">EulerZ: </string>
-    <string name="right_eye_open">Right eye open: </string>
-    <string name="left_eye_open">Left eye open:  </string>
-    <string name="face_detector_latency">Face detector latency: </string>
-    <string name="drowsiness_state_awake">State: Awake (%1$.2f)</string>
-    <string name="drowsiness_state_tired">State: Tired (%1$.2f)</string>
-    <string name="drowsiness_state_exhausted">State: Exhausted (%1$.2f)</string>
+    <string name="eulerx">EulerX: %1$.2f</string>
+    <string name="eulery">EulerY: %1$.2f</string>
+    <string name="eulerz">EulerZ: %1$.2f</string>
+    <string name="right_eye_open">Right eye: </string>
+    <string name="left_eye_open">Left eye:  </string>
+    <string name="face_detector_latency">latency: </string>
     <string name="drowsiness_timer">%1$d</string>
     <string name="drowsiness_alert_dialog_title">WARNING!</string>
-    <string name="drowsiness_alert_dialog_msg">You appear to be fatigue. Don\'t fall alseep! If you want to close the alarm, please click the close button below.</string>
+    <string name="drowsiness_alert_dialog_msg">You appear to be fatigue. Don\'t fall asleep! If you want to close the alarm, please click the close button below.</string>
     <string name="close">Close</string>
+    <string name="cancel">Cancel</string>
+    <string name="start_your_study">START</string>
+    <string name="main_activity_welcome_msg">Welcome to Your Learning Space</string>
+    <string name="start_detection">START DETECTION</string>
+    <string name="start_detection_notification_msg">Before clicking the got it button below, please place your phone in the appropriate position.\nAfter starting the detection, please maintain your standard learning posture for five seconds and do not move your phone. The system will use your standard posture as a reference for further analysis.</string>
+    <string name="understand">GOT IT</string>
+    <string name="learning_time">Learning Duration</string>
+    <string name="_60_00">60:00</string>
+    <string name="main_activity_timer">%1$02d:00</string>
+    <string name="learning_count_down_timer">%1$02d:%2$02d</string>
+    <string name="complete_learning_title">CONGRATULATIONS</string>
+    <string name="complete_learning_msg">You have finished your learning! Please click the view results button below to check your learning achievements</string>
+    <string name="view_results">VIEW RESULTS</string>
+
 </resources>

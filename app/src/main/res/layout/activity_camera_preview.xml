@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:keepScreenOn="true"
+    tools:context=".MainActivity">
+
+    <androidx.camera.view.PreviewView
+        android:id="@+id/viewFinder"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:layout_editor_absoluteX="0dp">
+
+    </androidx.camera.view.PreviewView>
+
+    <TextView
+        android:id="@+id/textViewEulerX"
+        style="@style/Widget.LearningAssistance.TextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="16dp"
+        android:fontFamily="sans-serif-medium"
+        android:textColor="#787878"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="TextView" />
+
+    <TextView
+        android:id="@+id/textViewEulerY"
+        style="@style/Widget.LearningAssistance.TextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:fontFamily="sans-serif-medium"
+        android:textColor="#787878"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/textViewEulerX"
+        tools:text="TextView" />
+
+    <TextView
+        android:id="@+id/textViewEulerZ"
+        style="@style/Widget.LearningAssistance.TextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:fontFamily="sans-serif-medium"
+        android:textColor="#787878"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/textViewEulerY"
+        tools:text="TextView" />
+
+    <TextView
+        android:id="@+id/textViewRightEyeOpenProb"
+        style="@style/Widget.LearningAssistance.TextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:fontFamily="sans-serif-medium"
+        android:textColor="#787878"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/textViewEulerZ"
+        tools:text="TextView" />
+
+    <TextView
+        android:id="@+id/textViewLeftEyeOpenProb"
+        style="@style/Widget.LearningAssistance.TextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:fontFamily="sans-serif-medium"
+        android:textColor="#787878"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/textViewRightEyeOpenProb"
+        tools:text="TextView" />
+
+    <TextView
+        android:id="@+id/textViewLatencyTime"
+        style="@style/Widget.LearningAssistance.TextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:fontFamily="sans-serif-medium"
+        android:textColor="#787878"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/textViewLeftEyeOpenProb"
+        tools:text="TextView" />
+
+    <TextView
+        android:id="@+id/textViewNoFaceMsg"
+        style="@style/Widget.LearningAssistance.TextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:fontFamily="sans-serif-medium"
+        android:textColor="#FF0000"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/textViewLearningTimer"
+        tools:text="TextView" />
+
+    <!--
+    <TextView
+        android:id="@+id/textViewDrowsinessMsg"
+        style="@style/Widget.LearningAssistance.TextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="8dp"
+        android:textColor="@android:color/holo_red_dark"
+        android:textSize="16sp"
+        app:layout_constraintEnd_toStartOf="@id/textViewDrowsinessTimer"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="TextView" />
+        -->
+
+    <TextView
+        android:id="@+id/textViewLearningTimer"
+        style="@style/Widget.LearningAssistance.TextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="8dp"
+        android:fontFamily="sans-serif"
+        android:textColor="#FBFBFB"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="TextView" />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:src="@drawable/ic_setting"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/textViewLearningTimer" />
+
+    <!--
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/buttonStartDetection"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/start_detection"
+        android:textColor="@color/black"
+        app:backgroundTint="#EAE5D3"
+        app:cornerRadius="50dp"
+        app:icon="@drawable/ic_camera"
+        app:iconTint="#8F8F8F"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+       -->
+
+    <!--
+    <com.example.learningassistance.facedetection.FaceGraphicOverlayView
+        android:id="@+id/faceGraphicOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+    -->
+</androidx.constraintlayout.widget.ConstraintLayout>

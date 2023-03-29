@@ -22,15 +22,14 @@ import com.google.mlkit.vision.face.FaceDetectorOptions
 
 class FaceDetectionProcessor(
     private val context: Context,
-    private val fgOverlay: FaceGraphicOverlayView,
+    //private val fgOverlay: FaceGraphicOverlayView,
     private val tvEulerX: TextView,
     private val tvEulerY: TextView,
     private val tvEulerZ: TextView,
     private val tvRightEyeOpenProb: TextView,
     private val tvLeftEyeOpenProb: TextView,
     private val tvLatencyTime: TextView,
-    private val tvDrowsinessMsg: TextView,
-    private val tvDrowsinessTimer: TextView,
+    private val tvNoFaceMsg: TextView,
     ): ImageAnalysis.Analyzer {
 
     private var totalFrameCount = 0
@@ -80,9 +79,10 @@ class FaceDetectionProcessor(
                     }
 
                     // Set the information about the face graphic overlay
-                    setFaceGraphicOverlay(faces, image, rotation)
+                    //setFaceGraphicOverlay(faces, image, rotation)
 
                     for (face in faces) {
+                        tvNoFaceMsg.text = ""
                         // Get the euler angles of the detected face
                         val rotX = face.headEulerAngleX
                         val rotY = face.headEulerAngleY
@@ -117,51 +117,49 @@ class FaceDetectionProcessor(
         val endDrowsinessTimerMs = System.currentTimeMillis()
         val duration = endDrowsinessTimerMs - startDrowsinessTimerMs
 
-        if (leftEyeOpenProb < 0.3 && rightEyeOpenProb < 0.3) {
+        if (leftEyeOpenProb < 0.3 || rightEyeOpenProb < 0.3) {
             closeEyesFrameCount++
         }
 
         // Show the timer
-        tvDrowsinessTimer.text = context.getString(R.string.drowsiness_timer, duration / 1000)
+        //tvDrowsinessTimer.text = context.getString(R.string.drowsiness_timer, duration / 1000)
 
         if (duration >= 30000) {
             val PERCLOS = closeEyesFrameCount.toFloat() / totalFrameCount.toFloat()
 
-            if (PERCLOS <= 0.15) {
-                tvDrowsinessMsg.text = context.getString(R.string.drowsiness_state_awake, PERCLOS)
-                tvDrowsinessMsg.setTextColor(context.getColor(R.color.lime_green))
-            } else if (PERCLOS > 0.15 && PERCLOS <= 0.3) {
-                tvDrowsinessMsg.text = context.getString(R.string.drowsiness_state_tired, PERCLOS)
-                tvDrowsinessMsg.setTextColor(context.getColor(R.color.orange))
-                Toast.makeText(context, "You are tired!", Toast.LENGTH_LONG).show()
-            } else {
-                tvDrowsinessMsg.text = context.getString(R.string.drowsiness_state_exhausted, PERCLOS)
-                tvDrowsinessMsg.setTextColor(context.getColor(R.color.red))
+            when {
+                PERCLOS <= 0.15 -> {
 
-                if (!isAlarmPlaying) {
-                    mediaPlayer = MediaPlayer.create(context, R.raw.alarm_sound)
-                    mediaPlayer.isLooping = true
-                    mediaPlayer.start()
-                    isAlarmPlaying = true
                 }
+                PERCLOS > 0.15 && PERCLOS <= 0.3 -> {
+                    Toast.makeText(context, "You are tired!", Toast.LENGTH_LONG).show()
+                }
+                else -> {
+                    if (!isAlarmPlaying) {
+                        mediaPlayer = MediaPlayer.create(context, R.raw.alarm_sound)
+                        mediaPlayer.isLooping = true
+                        mediaPlayer.start()
+                        isAlarmPlaying = true
+                    }
 
-                if (!isVibrating) {
-                    if (vibrator.hasVibrator()) {
-                        val pattern = longArrayOf(0, 1000)
-                        isVibrating = true
+                    if (!isVibrating) {
+                        if (vibrator.hasVibrator()) {
+                            val pattern = longArrayOf(0, 1000)
+                            isVibrating = true
 
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                            vibrator.vibrate(VibrationEffect.createWaveform(
-                                pattern,
-                                0
-                            ))
-                        } else {
-                            vibrator.vibrate(pattern, 0)
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                                vibrator.vibrate(VibrationEffect.createWaveform(
+                                    pattern,
+                                    0
+                                ))
+                            } else {
+                                vibrator.vibrate(pattern, 0)
+                            }
                         }
                     }
-                }
 
-                showAlertDialog(context)
+                    showAlertDialog(context)
+                }
             }
 
             // Reset the variables
@@ -197,25 +195,32 @@ class FaceDetectionProcessor(
     }
 
     private fun setNoFaceMsg() {
-        tvEulerX.text = context.getString(R.string.no_face_detected_info)
-        tvEulerY.text = context.getString(R.string.no_face_detected_info)
-        tvEulerZ.text = context.getString(R.string.no_face_detected_info)
-        tvRightEyeOpenProb.text = context.getString(R.string.no_face_detected_info)
-        tvLeftEyeOpenProb.text = context.getString(R.string.no_face_detected_info)
+        //tvEulerX.text = context.getString(R.string.no_face_detected_info)
+        //tvEulerY.text = context.getString(R.string.no_face_detected_info)
+        //tvEulerZ.text = context.getString(R.string.no_face_detected_info)
+        //tvRightEyeOpenProb.text = context.getString(R.string.no_face_detected_info)
+        //tvLeftEyeOpenProb.text = context.getString(R.string.no_face_detected_info)
+        tvEulerX.text = ""
+        tvEulerY.text = ""
+        tvEulerZ.text = ""
+        tvRightEyeOpenProb.text = ""
+        tvLeftEyeOpenProb.text = ""
+        tvLatencyTime.text = ""
+        tvNoFaceMsg.text = context.getString(R.string.no_face_detected_info)
     }
 
-    private fun setFaceGraphicOverlay(faces: List<Face>, image: InputImage, rotation: Int) {
+    /*private fun setFaceGraphicOverlay(faces: List<Face>, image: InputImage, rotation: Int) {
         fgOverlay.setFace(faces)
         fgOverlay.setRotation(rotation)
         fgOverlay.setImageSize(image.width.toFloat(), image.height.toFloat())
         fgOverlay.setPreviewSize(fgOverlay.width.toFloat(), fgOverlay.height.toFloat())
-    }
+    }*/
 
 
     private fun setEulerAnglesMsg(rotX: Float, rotY: Float, rotZ: Float) {
-        val eulerXMsg = context.getString(R.string.eulerx) + "$rotX"
-        val eulerYMsg = context.getString(R.string.eulery) + "$rotY"
-        val eulerZMsg = context.getString(R.string.eulerz) + "$rotZ"
+        val eulerXMsg = String.format(context.getString(R.string.eulerx), rotX)
+        val eulerYMsg = String.format(context.getString(R.string.eulery), rotY)
+        val eulerZMsg = String.format(context.getString(R.string.eulerz), rotZ)
         tvEulerX.text = eulerXMsg
         tvEulerY.text = eulerYMsg
         tvEulerZ.text = eulerZMsg
