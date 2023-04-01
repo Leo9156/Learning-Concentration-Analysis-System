@@ -52,7 +52,7 @@
         android:layout_width="106dp"
         android:layout_height="51dp"
         android:layout_marginTop="16dp"
-        android:text="@string/start_your_study"
+        android:text="@string/start"
         android:textColor="@color/black"
         app:backgroundTint="#EEEBEA"
         app:cornerRadius="50dp"

@@ -8,14 +8,18 @@
     <string name="left_eye_open">Left eye:  </string>
     <string name="face_detector_latency">latency: </string>
     <string name="drowsiness_timer">%1$d</string>
-    <string name="drowsiness_alert_dialog_title">WARNING!</string>
+    <string name="drowsiness_tired_msg">You are tired</string>
+    <string name="warning">WARNING!</string>
     <string name="drowsiness_alert_dialog_msg">You appear to be fatigue. Don\'t fall asleep! If you want to close the alarm, please click the close button below.</string>
+    <string name="basic_head_pose_msg">Click start to begin basic head pose measurement for 5 seconds.</string>
+    <string name="basic_head_pose_complete_msg">Basic head pose measurement is done, the system will start analyzing your attention.</string>
+    <string name="basic_head_pose_counting_msg">Basic head pose measuring. %1$d seconds left</string>
     <string name="close">Close</string>
     <string name="cancel">Cancel</string>
-    <string name="start_your_study">START</string>
+    <string name="start">START</string>
     <string name="main_activity_welcome_msg">Welcome to Your Learning Space</string>
     <string name="start_detection">START DETECTION</string>
-    <string name="start_detection_notification_msg">Before clicking the got it button below, please place your phone in the appropriate position.\nAfter starting the detection, please maintain your standard learning posture for five seconds and do not move your phone. The system will use your standard posture as a reference for further analysis.</string>
+    <string name="start_detection_notification_msg">Before clicking the got it button, please place your phone in the appropriate position. After starting the detection, please maintain your standard learning pose for five seconds and do not move the device. The system will use your standard posture as a reference for further analysis.</string>
     <string name="understand">GOT IT</string>
     <string name="learning_time">Learning Duration</string>
     <string name="_60_00">60:00</string>
@@ -24,5 +28,7 @@
     <string name="complete_learning_title">CONGRATULATIONS</string>
     <string name="complete_learning_msg">You have finished your learning! Please click the view results button below to check your learning achievements</string>
     <string name="view_results">VIEW RESULTS</string>
+    <string name="retry">RETRY</string>
+    <string name="head_pose_retry_msg">No faces detected while measuring basic head poses. Please try again!</string>
 
 </resources>

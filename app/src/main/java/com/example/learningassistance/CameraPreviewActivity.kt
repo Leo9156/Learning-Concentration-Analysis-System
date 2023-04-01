@@ -1,32 +1,40 @@
 package com.example.learningassistance
 
 import android.annotation.SuppressLint
+import android.app.ProgressDialog.show
 import android.content.Context
 import android.content.Intent
-import android.content.IntentSender.OnFinished
 import android.content.pm.PackageManager
+//import android.os.Build.VERSION_CODES.R
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.util.Log
 import android.util.Size
+import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.camera.core.CameraSelector
+import androidx.camera.core.CameraX
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.CameraController
 import androidx.camera.view.PreviewView
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.example.learningassistance.facedetection.BasicHeadPoseMeasurement
 import com.example.learningassistance.facedetection.FaceDetectionProcessor
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.snackbar.Snackbar
 import java.util.concurrent.Executors
 
 class CameraPreviewActivity : AppCompatActivity() {
 
+    private lateinit var root: ConstraintLayout
     private lateinit var viewFinder: PreviewView
-    //private lateinit var btnStartDetection: Button
     //private lateinit var faceGraphicOverlayView: FaceGraphicOverlayView
     private lateinit var textViewEulerX: TextView
     private lateinit var textViewEulerY: TextView
@@ -36,6 +44,9 @@ class CameraPreviewActivity : AppCompatActivity() {
     private lateinit var textViewLatencyTime: TextView
     private lateinit var textViewLearningTimer: TextView
     private lateinit var textViewNoFaceMsg: TextView
+    private lateinit var textViewDrowsinessTimer: TextView
+    private lateinit var btnRetryBasicHeadPoseMeasurement: MaterialButton
+    private lateinit var faceDetectionProcessor: FaceDetectionProcessor
     private var learningTime: Int = 0
     private lateinit var cameraProvider: ProcessCameraProvider
     private var cameraExecutor = Executors.newSingleThreadExecutor()
@@ -44,6 +55,7 @@ class CameraPreviewActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_camera_preview)
 
+        root = findViewById(R.id.root)
         viewFinder = findViewById(R.id.viewFinder)
         //btnStartDetection = findViewById(R.id.buttonStartDetection)
         //faceGraphicOverlayView = findViewById(R.id.faceGraphicOverlay)
@@ -55,6 +67,21 @@ class CameraPreviewActivity : AppCompatActivity() {
         textViewLatencyTime = findViewById(R.id.textViewLatencyTime)
         textViewLearningTimer = findViewById(R.id.textViewLearningTimer)
         textViewNoFaceMsg = findViewById(R.id.textViewNoFaceMsg)
+        textViewDrowsinessTimer = findViewById(R.id.textViewDrowsinessTimer)
+        btnRetryBasicHeadPoseMeasurement = findViewById(R.id.buttonRetryBasicHeadPoseMeasurement)
+        faceDetectionProcessor = FaceDetectionProcessor(
+            this,
+            //faceGraphicOverlayView,
+            root,
+            textViewEulerX,
+            textViewEulerY,
+            textViewEulerZ,
+            textViewRightEyeOpenProb,
+            textViewLeftEyeOpenProb,
+            textViewLatencyTime,
+            textViewNoFaceMsg,
+            textViewDrowsinessTimer
+        )
 
         // Get the info from the MainActivity
         val intent: Intent = intent
@@ -65,6 +92,8 @@ class CameraPreviewActivity : AppCompatActivity() {
         if (allPermissionsGranted()) {
             startCamera()
             startLearningTimer(this)
+            showBasicHeadPoseMeasurementSnackBar()
+
         } else {
             ActivityCompat.requestPermissions(
                 this,
@@ -72,6 +101,46 @@ class CameraPreviewActivity : AppCompatActivity() {
                 REQUEST_CODE_PERMISSIONS
             )
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        BasicHeadPoseMeasurement.resetProperties()
+    }
+
+    private fun showBasicHeadPoseMeasurementSnackBar() {
+        val snackBar = Snackbar.make(root, R.string.basic_head_pose_msg, Snackbar.LENGTH_INDEFINITE)
+        snackBar.setAction(R.string.start) {
+            BasicHeadPoseMeasurement.setIsBasicHeadPoseMeasurementStarting(true)
+
+            object : CountDownTimer(5000, 1000) {
+                override fun onTick(millisUntilFinished: Long) {
+                    if (!BasicHeadPoseMeasurement.hasToRestart()) {
+                        val snackBar: Snackbar = Snackbar.make(
+                            root,
+                            String.format(
+                                getString(R.string.basic_head_pose_counting_msg),
+                                (millisUntilFinished / 1000).toInt()
+                            ),
+                            Snackbar.LENGTH_INDEFINITE
+                        )
+                        snackBar.show()
+                    } else {
+                        snackBar.dismiss()
+                    }
+                }
+
+                override fun onFinish() {
+                    if (!BasicHeadPoseMeasurement.hasToRestart()) {
+                        Snackbar.make(root, R.string.basic_head_pose_complete_msg, Snackbar.LENGTH_SHORT)
+                            .show()
+                    } else {
+                        snackBar.dismiss()
+                    }
+                }
+            }.start()
+        }.show()
     }
 
     private fun startLearningTimer(context: Context) {
@@ -152,7 +221,7 @@ class CameraPreviewActivity : AppCompatActivity() {
                     it.setSurfaceProvider(viewFinder.surfaceProvider)
                 }
 
-            Log.v(TAG, "resolution: ${targetSolution}")
+            //Log.v(TAG, "resolution: ${targetSolution}")
 
             val imageAnalysis = ImageAnalysis.Builder()
                 .setTargetResolution(targetSolution)
@@ -161,17 +230,7 @@ class CameraPreviewActivity : AppCompatActivity() {
 
             imageAnalysis.setAnalyzer(
                 cameraExecutor,
-                FaceDetectionProcessor(
-                    this,
-                    //faceGraphicOverlayView,
-                    textViewEulerX,
-                    textViewEulerY,
-                    textViewEulerZ,
-                    textViewRightEyeOpenProb,
-                    textViewLeftEyeOpenProb,
-                    textViewLatencyTime,
-                    textViewNoFaceMsg
-                )
+                faceDetectionProcessor
             )
 
             try {
@@ -185,13 +244,6 @@ class CameraPreviewActivity : AppCompatActivity() {
         }, ContextCompat.getMainExecutor(this))
     }
 
-    /*private fun getTargetResolution(): Size {
-        return when(resources.configuration.orientation) {
-            Configuration.ORIENTATION_PORTRAIT -> Size(480, 640)
-            Configuration.ORIENTATION_LANDSCAPE -> Size(640, 480)
-            else -> Size(640, 480)
-        }
-    }*/
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
         ContextCompat.checkSelfPermission(baseContext, it) == PackageManager.PERMISSION_GRANTED
     }
