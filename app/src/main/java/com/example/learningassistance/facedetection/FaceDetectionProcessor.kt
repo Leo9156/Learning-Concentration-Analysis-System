@@ -6,12 +6,14 @@ import android.media.MediaPlayer
 import android.os.CountDownTimer
 import android.os.Vibrator
 import android.util.Log
+import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.example.learningassistance.R
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.google.mlkit.vision.common.InputImage
@@ -29,7 +31,8 @@ class FaceDetectionProcessor(
     private val tvLeftEyeOpenProb: TextView,
     private val tvLatencyTime: TextView,
     private val tvNoFaceMsg: TextView,
-    private val tvDrowsinessTimer: TextView
+    private val tvDrowsinessTimer: TextView,
+    private val btnRetryBasicHeadPoseMeasurement: MaterialButton
     ): ImageAnalysis.Analyzer {
 
     private val drowsinessDetector = DrowsinessDetection(context)
@@ -70,7 +73,24 @@ class FaceDetectionProcessor(
                         drowsinessDetector.startDrowsinessTimer()
 
                         // Restart basic head pose measuring if the user is measuring basic head pose
-                        restartHeadPoseMeasurement()
+                        if (BasicHeadPoseMeasurement.isBasicHeadPoseMeasurementStarting()) {
+                            BasicHeadPoseMeasurement.setHasToRestart(true)
+                            BasicHeadPoseMeasurement.setIsBasicHeadPoseMeasurementStarting(false)
+                            BasicHeadPoseMeasurement.setTotalFrame(0)
+                            BasicHeadPoseMeasurement.setSumOfHeadEulerX(0f)
+                            BasicHeadPoseMeasurement.setSumOfHeadEulerY(0f)
+                            BasicHeadPoseMeasurement.setSumOfHeadEulerZ(0f)
+
+                            MaterialAlertDialogBuilder(context)
+                                .setTitle(R.string.warning)
+                                .setMessage(R.string.head_pose_retry_msg)
+                                .setIcon(R.drawable.ic_warning)
+                                .setPositiveButton(R.string.retry) { dialog, _ ->
+                                    restartHeadPoseMeasurement()
+                                }
+                                .setCancelable(false)
+                                .show()
+                        }
 
                     } else {
                         //totalDrowsinessDetectionFrameCount++
@@ -106,6 +126,36 @@ class FaceDetectionProcessor(
                             }
                             // Start attention analysis
                             else {
+                                // Let the retry button of basic head pose measurement become visible and set the listener
+                                btnRetryBasicHeadPoseMeasurement.visibility = View.VISIBLE
+                                btnRetryBasicHeadPoseMeasurement.setOnClickListener {
+                                    BasicHeadPoseMeasurement.setIsBasicHeadPoseDetecting(true)
+
+                                    MaterialAlertDialogBuilder(context)
+                                        .setTitle(R.string.retry_basic_head_pose_measurement_msg)
+                                        .setMessage(R.string.retyr_basic_head_pose_measurement_content)
+                                        .setPositiveButton(R.string.retry) { dialog, _ ->
+                                            BasicHeadPoseMeasurement.setIsBasicHeadPoseMeasurementStarting(false)
+                                            BasicHeadPoseMeasurement.setTotalFrame(0)
+                                            BasicHeadPoseMeasurement.setSumOfHeadEulerX(0f)
+                                            BasicHeadPoseMeasurement.setSumOfHeadEulerY(0f)
+                                            BasicHeadPoseMeasurement.setSumOfHeadEulerZ(0f)
+
+                                            restartHeadPoseMeasurement()
+
+                                            // Reset the variables of drowsiness detection
+                                            drowsinessDetector.resetTotalFrameNumber()
+                                            drowsinessDetector.resetClosedEyesFrameNumber()
+
+                                            dialog.dismiss()
+                                        }
+                                        .setNegativeButton(R.string.cancel) {dialog, _ ->
+                                            BasicHeadPoseMeasurement.setIsBasicHeadPoseDetecting(false)
+                                            dialog.dismiss()
+                                        }
+                                        .show()
+                                }
+
                                 //Set the open probability of each eye on the textView
                                 if (rightEyeOpenProb != null && leftEyeOpenProb != null) {
                                     setRightEyeMsg(rightEyeOpenProb)
@@ -134,46 +184,34 @@ class FaceDetectionProcessor(
     }
 
     private fun restartHeadPoseMeasurement() {
-        if (BasicHeadPoseMeasurement.isBasicHeadPoseMeasurementStarting()) {
-            BasicHeadPoseMeasurement.setIsBasicHeadPoseMeasurementStarting(false)
-            BasicHeadPoseMeasurement.setHasToRestart(true)
-            BasicHeadPoseMeasurement.setTotalFrame(0)
-            BasicHeadPoseMeasurement.setSumOfHeadEulerX(0f)
-            BasicHeadPoseMeasurement.setSumOfHeadEulerY(0f)
-            BasicHeadPoseMeasurement.setSumOfHeadEulerZ(0f)
+        Snackbar.make(root, R.string.basic_head_pose_msg, Snackbar.LENGTH_INDEFINITE)
+            .setAction(R.string.start) {
+                BasicHeadPoseMeasurement.setIsBasicHeadPoseMeasurementStarting(true)
+                BasicHeadPoseMeasurement.setHasToRestart(false)
 
-            MaterialAlertDialogBuilder(context)
-                .setTitle(R.string.warning)
-                .setMessage(R.string.head_pose_retry_msg)
-                .setIcon(R.drawable.ic_warning)
-                .setPositiveButton(R.string.retry) { dialog, _ ->
-                    Snackbar.make(root, R.string.basic_head_pose_msg, Snackbar.LENGTH_INDEFINITE)
-                        .setAction(R.string.start) {
-                            BasicHeadPoseMeasurement.setIsBasicHeadPoseMeasurementStarting(true)
-
-                            object : CountDownTimer(5000, 1000) {
-                                override fun onTick(millisUntilFinished: Long) {
-                                    Snackbar.make(
-                                        root,
-                                        String.format(
-                                            context.getString(R.string.basic_head_pose_counting_msg),
-                                            (millisUntilFinished / 1000).toInt()),
-                                        Snackbar.LENGTH_INDEFINITE
-                                    ).show()
-                                }
-
-                                override fun onFinish() {
-                                    Snackbar.make(root, R.string.basic_head_pose_complete_msg, Snackbar.LENGTH_SHORT)
-                                        .show()
-                                }
-
-                            }.start()
+                object : CountDownTimer(5000, 1000) {
+                    override fun onTick(millisUntilFinished: Long) {
+                        if (!BasicHeadPoseMeasurement.hasToRestart()) {
+                            Snackbar.make(
+                                root,
+                                String.format(
+                                    context.getString(R.string.basic_head_pose_counting_msg),
+                                    (millisUntilFinished / 1000).toInt()),
+                                Snackbar.LENGTH_INDEFINITE
+                            ).show()
                         }
-                        .show()
-                }
-                .setCancelable(false)
-                .show()
-        }
+                    }
+
+                    override fun onFinish() {
+                        if (!BasicHeadPoseMeasurement.hasToRestart()) {
+                            Snackbar.make(root, R.string.basic_head_pose_complete_msg, Snackbar.LENGTH_SHORT)
+                                .show()
+                        }
+                    }
+
+                }.start()
+            }
+            .show()
     }
 
     private fun measureBasicHeadPose(context: Context, rotX: Float, rotY: Float, rotZ: Float) {

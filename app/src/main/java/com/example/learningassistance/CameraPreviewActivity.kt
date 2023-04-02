@@ -11,6 +11,7 @@ import android.os.Bundle
 import android.os.CountDownTimer
 import android.util.Log
 import android.util.Size
+import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
@@ -24,6 +25,8 @@ import androidx.camera.view.PreviewView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.startActivity
+import androidx.core.view.isInvisible
 import com.example.learningassistance.facedetection.BasicHeadPoseMeasurement
 import com.example.learningassistance.facedetection.FaceDetectionProcessor
 import com.google.android.material.button.MaterialButton
@@ -80,8 +83,14 @@ class CameraPreviewActivity : AppCompatActivity() {
             textViewLeftEyeOpenProb,
             textViewLatencyTime,
             textViewNoFaceMsg,
-            textViewDrowsinessTimer
+            textViewDrowsinessTimer,
+            btnRetryBasicHeadPoseMeasurement
         )
+
+        // Hide the btnRetryBasicHeadPoseMeasurement when the basic head pose is detecting
+        if (BasicHeadPoseMeasurement.isBasicHeadPoseDetecting()) {
+            btnRetryBasicHeadPoseMeasurement.visibility = View.INVISIBLE
+        }
 
         // Get the info from the MainActivity
         val intent: Intent = intent
@@ -140,7 +149,9 @@ class CameraPreviewActivity : AppCompatActivity() {
                     }
                 }
             }.start()
-        }.show()
+        }
+            .setAnchorView(btnRetryBasicHeadPoseMeasurement)
+            .show()
     }
 
     private fun startLearningTimer(context: Context) {

@@ -30,5 +30,7 @@
     <string name="view_results">VIEW RESULTS</string>
     <string name="retry">RETRY</string>
     <string name="head_pose_retry_msg">No faces detected while measuring basic head poses. Please try again!</string>
+    <string name="retry_basic_head_pose_measurement_msg">Retry basic head pose measurement?</string>
+    <string name="retyr_basic_head_pose_measurement_content">Do you want to measure your basic head pose again?</string>
 
 </resources>

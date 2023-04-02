@@ -13,9 +13,6 @@ object BasicHeadPoseMeasurement {
     private var basicHeadEulerX = 0f
     private var basicHeadEulerY = 0f
     private var basicHeadEulerZ = 0f
-    private var currentHeadEulerX = 0f
-    private var currentHeadEulerY = 0f
-    private var currentHeadEulerZ = 0f
     private var sumOfHeadEulerX = 0f
     private var sumOfHeadEulerY = 0f
     private var sumOfHeadEulerZ = 0f
