@@ -1,10 +1,11 @@
 package com.example.learningassistance
 
 import android.annotation.SuppressLint
-import android.app.ProgressDialog.show
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.media.MediaPlayer
+import android.media.RingtoneManager
 //import android.os.Build.VERSION_CODES.R
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -12,21 +13,16 @@ import android.os.CountDownTimer
 import android.util.Log
 import android.util.Size
 import android.view.View
-import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.camera.core.CameraSelector
-import androidx.camera.core.CameraX
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.camera.view.CameraController
 import androidx.camera.view.PreviewView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.startActivity
-import androidx.core.view.isInvisible
 import com.example.learningassistance.facedetection.BasicHeadPoseMeasurement
 import com.example.learningassistance.facedetection.FaceDetectionProcessor
 import com.google.android.material.button.MaterialButton
@@ -42,12 +38,15 @@ class CameraPreviewActivity : AppCompatActivity() {
     private lateinit var textViewEulerX: TextView
     private lateinit var textViewEulerY: TextView
     private lateinit var textViewEulerZ: TextView
-    private lateinit var textViewRightEyeOpenProb: TextView
-    private lateinit var textViewLeftEyeOpenProb: TextView
+    private lateinit var textViewRightEAR: TextView
+    private lateinit var textViewLeftEAR: TextView
+    private lateinit var textViewEAR: TextView
     private lateinit var textViewLatencyTime: TextView
     private lateinit var textViewLearningTimer: TextView
     private lateinit var textViewNoFaceMsg: TextView
     private lateinit var textViewDrowsinessTimer: TextView
+    private lateinit var textViewNoFaceTimer: TextView
+    private lateinit var textViewBasicHeadPoseTimer: TextView
     private lateinit var btnRetryBasicHeadPoseMeasurement: MaterialButton
     private lateinit var faceDetectionProcessor: FaceDetectionProcessor
     private var learningTime: Int = 0
@@ -65,12 +64,15 @@ class CameraPreviewActivity : AppCompatActivity() {
         textViewEulerX = findViewById(R.id.textViewEulerX)
         textViewEulerY = findViewById(R.id.textViewEulerY)
         textViewEulerZ = findViewById(R.id.textViewEulerZ)
-        textViewRightEyeOpenProb = findViewById(R.id.textViewRightEyeOpenProb)
-        textViewLeftEyeOpenProb = findViewById(R.id.textViewLeftEyeOpenProb)
+        textViewRightEAR = findViewById(R.id.textViewRightEAR)
+        textViewLeftEAR = findViewById(R.id.textViewLeftEAR)
+        textViewEAR = findViewById(R.id.textViewEAR)
         textViewLatencyTime = findViewById(R.id.textViewLatencyTime)
         textViewLearningTimer = findViewById(R.id.textViewLearningTimer)
         textViewNoFaceMsg = findViewById(R.id.textViewNoFaceMsg)
         textViewDrowsinessTimer = findViewById(R.id.textViewDrowsinessTimer)
+        textViewNoFaceTimer= findViewById(R.id.textViewNoFaceTimer)
+        textViewBasicHeadPoseTimer= findViewById(R.id.textViewBasicHeadPoseTimer)
         btnRetryBasicHeadPoseMeasurement = findViewById(R.id.buttonRetryBasicHeadPoseMeasurement)
         faceDetectionProcessor = FaceDetectionProcessor(
             this,
@@ -79,11 +81,14 @@ class CameraPreviewActivity : AppCompatActivity() {
             textViewEulerX,
             textViewEulerY,
             textViewEulerZ,
-            textViewRightEyeOpenProb,
-            textViewLeftEyeOpenProb,
+            textViewRightEAR,
+            textViewLeftEAR,
+            textViewEAR,
             textViewLatencyTime,
             textViewNoFaceMsg,
             textViewDrowsinessTimer,
+            textViewNoFaceTimer,
+            textViewBasicHeadPoseTimer,
             btnRetryBasicHeadPoseMeasurement
         )
 
@@ -101,7 +106,7 @@ class CameraPreviewActivity : AppCompatActivity() {
         if (allPermissionsGranted()) {
             startCamera()
             startLearningTimer(this)
-            showBasicHeadPoseMeasurementSnackBar()
+            showBasicHeadPoseMeasurementSnackBar(this)
 
         } else {
             ActivityCompat.requestPermissions(
@@ -118,7 +123,7 @@ class CameraPreviewActivity : AppCompatActivity() {
         BasicHeadPoseMeasurement.resetProperties()
     }
 
-    private fun showBasicHeadPoseMeasurementSnackBar() {
+    private fun showBasicHeadPoseMeasurementSnackBar(context: Context) {
         val snackBar = Snackbar.make(root, R.string.basic_head_pose_msg, Snackbar.LENGTH_INDEFINITE)
         snackBar.setAction(R.string.start) {
             BasicHeadPoseMeasurement.setIsBasicHeadPoseMeasurementStarting(true)
@@ -126,7 +131,10 @@ class CameraPreviewActivity : AppCompatActivity() {
             object : CountDownTimer(5000, 1000) {
                 override fun onTick(millisUntilFinished: Long) {
                     if (!BasicHeadPoseMeasurement.hasToRestart()) {
-                        val snackBar: Snackbar = Snackbar.make(
+                        textViewBasicHeadPoseTimer.visibility = View.VISIBLE
+                        textViewBasicHeadPoseTimer.text = String.format(context.getString(R.string.basic_head_pose_counting_msg), (millisUntilFinished / 1000))
+                    }
+                        /*val snackBar: Snackbar = Snackbar.make(
                             root,
                             String.format(
                                 getString(R.string.basic_head_pose_counting_msg),
@@ -137,20 +145,39 @@ class CameraPreviewActivity : AppCompatActivity() {
                         snackBar.show()
                     } else {
                         snackBar.dismiss()
-                    }
+                    }*/
                 }
 
                 override fun onFinish() {
                     if (!BasicHeadPoseMeasurement.hasToRestart()) {
-                        Snackbar.make(root, R.string.basic_head_pose_complete_msg, Snackbar.LENGTH_SHORT)
+                        Snackbar.make(
+                            root,
+                            R.string.basic_head_pose_complete_msg,
+                            Snackbar.LENGTH_SHORT
+                        )
                             .show()
+
+                        textViewBasicHeadPoseTimer.visibility = View.INVISIBLE
+
+                        val notificationUri =
+                            RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+                        val mediaPlayer = MediaPlayer.create(context, notificationUri)
+
+                        if (mediaPlayer == null) {
+                            Log.e(TAG, "mediaPlayer create failed")
+                        } else {
+                            mediaPlayer.start()
+
+                            if (!mediaPlayer.isPlaying) {
+                                mediaPlayer.release()
+                            }
+                        }
                     } else {
                         snackBar.dismiss()
                     }
                 }
             }.start()
         }
-            .setAnchorView(btnRetryBasicHeadPoseMeasurement)
             .show()
     }
 

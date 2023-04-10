@@ -61,7 +61,7 @@
         tools:text="TextView" />
 
     <TextView
-        android:id="@+id/textViewRightEyeOpenProb"
+        android:id="@+id/textViewRightEAR"
         style="@style/Widget.LearningAssistance.TextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -75,7 +75,7 @@
         tools:text="TextView" />
 
     <TextView
-        android:id="@+id/textViewLeftEyeOpenProb"
+        android:id="@+id/textViewLeftEAR"
         style="@style/Widget.LearningAssistance.TextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -85,7 +85,21 @@
         android:textSize="16sp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textViewRightEyeOpenProb"
+        app:layout_constraintTop_toBottomOf="@id/textViewRightEAR"
+        tools:text="TextView" />
+
+    <TextView
+        android:id="@+id/textViewEAR"
+        style="@style/Widget.LearningAssistance.TextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:fontFamily="sans-serif-medium"
+        android:textColor="#787878"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/textViewLeftEAR"
         tools:text="TextView" />
 
     <TextView
@@ -99,7 +113,7 @@
         android:textSize="16sp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textViewLeftEyeOpenProb"
+        app:layout_constraintTop_toBottomOf="@id/textViewEAR"
         tools:text="TextView" />
 
     <TextView
@@ -175,9 +189,39 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
+        android:textColor="#787878"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textViewNoFaceMsg" />
+        app:layout_constraintTop_toBottomOf="@id/textViewBasicHeadPoseTimer"
+        tools:text="TextView"/>
+
+    <TextView
+        android:id="@+id/textViewNoFaceTimer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:textColor="#787878"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/textViewDrowsinessTimer"
+        tools:text="TextView" />
+
+    <TextView
+        android:id="@+id/textViewBasicHeadPoseTimer"
+        style="@style/Widget.LearningAssistance.TextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:fontFamily="sans-serif-medium"
+        android:textColor="#FF9800"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+
+        app:layout_constraintTop_toBottomOf="@id/textViewNoFaceMsg"
+        tools:text="TextView" />
 
     <!--
     <com.google.android.material.button.MaterialButton
