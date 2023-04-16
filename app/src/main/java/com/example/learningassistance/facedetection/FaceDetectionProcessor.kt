@@ -3,13 +3,10 @@ package com.example.learningassistance.facedetection
 import android.annotation.SuppressLint
 import android.content.Context
 import android.media.MediaPlayer
-import android.media.Ringtone
 import android.media.RingtoneManager
-import android.net.Uri
 import android.os.CountDownTimer
 import android.util.Log
 import android.view.View
-import android.widget.MediaController
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -44,18 +41,25 @@ class FaceDetectionProcessor(
     private val btnRetryBasicHeadPoseMeasurement: MaterialButton
     ): ImageAnalysis.Analyzer {
 
+    // The rotation degree of pitch, yaw, and row
     private var rotX = 0f
     private var rotY = 0f
     private var rotZ = 0f
 
+    // The count down timer of the basic head pose
+    private var basicHeadPoseTimer: CountDownTimer? = null
+
+    // Create the drowsiness detector
     private val drowsinessDetector = DrowsinessDetection(context)
     private lateinit var fatigueAlertDialog: AlertDialog
 
+    // Create the no face detector
     private val noFaceDetector = NoFaceDetection(context)
     private lateinit var noFaceAlertDialog: AlertDialog
 
     private var isAlertDialogShowing = false
 
+    // Create the face detector of ML kit
     private val faceDetectionOptions = FaceDetectorOptions.Builder()
         .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_FAST)
         //.setContourMode(FaceDetectorOptions.CONTOUR_MODE_NONE)
@@ -63,8 +67,12 @@ class FaceDetectionProcessor(
         .build()
     private val faceDetectionDetector = FaceDetection.getClient(faceDetectionOptions)
 
+    // Create the face mesh detector of ML kit
     private val faceMeshOptions = FaceMeshDetectorOptions.Builder()
     private val faceMeshDetector = FaceMeshDetection.getClient(faceMeshOptions.build())
+
+    // Create the analyzer based on head pose
+    private val headPoseAttentionAnalyzer = HeadPoseAttentionAnalysis()
 
     @SuppressLint("UnsafeOptInUsageError")
     override fun analyze(imageProxy: ImageProxy) {
@@ -72,49 +80,20 @@ class FaceDetectionProcessor(
         if (mediaImage != null) {
             // Get the image
             val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
-            //val rotation = imageProxy.imageInfo.rotationDegrees
             val detectionStartTimeMs = System.currentTimeMillis()
-
-            //Log.v(TAG, "rotation: $rotation")
 
             // Process the image
             val faceDetectionResult = faceDetectionDetector.process(image)
                 .addOnSuccessListener { faces ->
                     // Dealing with no face detected situations
                     if (faces.size == 0) {
-                        // Show the no face message to the user
-                        setNoFaceMsg()
+                        setNoFaceMsg()  // Show the no face message to the user
 
-                        // Set no face flag
-                        noFaceDetector.setIsNoFace(true)
+                        noFaceDetector.setIsNoFace(true)  // Set no face flag to true
 
-                        // Reset leftEyeOpenProb and rightEyeOpenProb
-                        drowsinessDetector.resetEAR()
+                        drowsinessDetector.resetEAR()   // Reset leftEyeEAR and rightEyeEAR
 
-                        // Restart basic head pose measuring if the user is measuring basic head pose
-                        if (BasicHeadPoseMeasurement.isBasicHeadPoseMeasurementStarting()) {
-                            // Reset no face detector
-                            noFaceDetector.resetDetector()
-                            drowsinessDetector.resetDetector()
-
-                            BasicHeadPoseMeasurement.setHasToRestart(true)
-                            BasicHeadPoseMeasurement.setIsBasicHeadPoseMeasurementStarting(false)
-                            BasicHeadPoseMeasurement.setTotalFrame(0)
-                            BasicHeadPoseMeasurement.setSumOfHeadEulerX(0f)
-                            BasicHeadPoseMeasurement.setSumOfHeadEulerY(0f)
-                            BasicHeadPoseMeasurement.setSumOfHeadEulerZ(0f)
-
-                            MaterialAlertDialogBuilder(context)
-                                .setTitle(R.string.warning)
-                                .setMessage(R.string.head_pose_retry_msg)
-                                .setIcon(R.drawable.ic_warning)
-                                .setPositiveButton(R.string.retry) { dialog, _ ->
-                                    restartHeadPoseMeasurement()
-                                    dialog.dismiss()
-                                }
-                                .setCancelable(false)
-                                .show()
-                        }
+                        restartBasicHeadPoseMeasurement()  // Restart basic head pose measuring if the user is measuring basic head pose
 
                     } else {
                         // Set the information about the face graphic overlay
@@ -122,7 +101,6 @@ class FaceDetectionProcessor(
 
                         // Set no face flag to false
                         noFaceDetector.setIsNoFace(false)
-
 
                         for (face in faces) {
                             // reset the textView of no face detection
@@ -158,47 +136,21 @@ class FaceDetectionProcessor(
                                 if (BasicHeadPoseMeasurement.isBasicHeadPoseMeasurementStarting()) {
                                     noFaceDetector.resetDetector()
                                     drowsinessDetector.resetDetector()
-
                                     measureBasicHeadPose(context, rotX, rotY, rotZ)
                                 } else {
                                     BasicHeadPoseMeasurement.setStartTimer(System.currentTimeMillis())
                                 }
                             }
-                            // Start attention analysis
                             else {
                                 // Let the retry button of basic head pose measurement become visible and set the listener
                                 btnRetryBasicHeadPoseMeasurement.visibility = View.VISIBLE
                                 btnRetryBasicHeadPoseMeasurement.setOnClickListener {
-                                    BasicHeadPoseMeasurement.setIsBasicHeadPoseDetecting(true)
-
-                                    MaterialAlertDialogBuilder(context)
-                                        .setTitle(R.string.retry_basic_head_pose_measurement_msg)
-                                        .setMessage(R.string.retyr_basic_head_pose_measurement_content)
-                                        .setPositiveButton(R.string.retry) { dialog, _ ->
-                                            BasicHeadPoseMeasurement.setIsBasicHeadPoseMeasurementStarting(false)
-                                            BasicHeadPoseMeasurement.setTotalFrame(0)
-                                            BasicHeadPoseMeasurement.setSumOfHeadEulerX(0f)
-                                            BasicHeadPoseMeasurement.setSumOfHeadEulerY(0f)
-                                            BasicHeadPoseMeasurement.setSumOfHeadEulerZ(0f)
-
-                                            restartHeadPoseMeasurement()
-
-                                            // Reset the variables of drowsiness and no face detection
-                                            drowsinessDetector.resetDetector()
-                                            noFaceDetector.resetDetector()
-
-                                            dialog.dismiss()
-                                        }
-                                        .setNegativeButton(R.string.cancel) {dialog, _ ->
-                                            BasicHeadPoseMeasurement.setIsBasicHeadPoseDetecting(false)
-                                            dialog.dismiss()
-                                        }
-                                        .show()
+                                    retryBasicHeadPoseMeasurement()
                                 }
                             }
                         }
 
-                        // Show the euler angles on the textView
+                        // Show the normalized euler angles on the textView
                         rotX -= BasicHeadPoseMeasurement.getBasicHeadEulerX()
                         rotY -= BasicHeadPoseMeasurement.getBasicHeadEulerY()
                         rotZ -= BasicHeadPoseMeasurement.getBasicHeadEulerZ()
@@ -218,6 +170,9 @@ class FaceDetectionProcessor(
                     // Drowsiness detection
                     drowsinessDetection()
 
+                    // Attention analysis based on head pose
+                    headPoseAttentivenessAnalysis(rotX, rotY, rotZ)
+
                     // Calculate the processing time
                     val detectionEndTimeMs = System.currentTimeMillis()
                     processTime(detectionStartTimeMs, detectionEndTimeMs)
@@ -231,6 +186,18 @@ class FaceDetectionProcessor(
                 }
         }
 
+    }
+
+    private fun headPoseAttentivenessAnalysis(rotX: Float, rotY: Float, rotZ: Float) {
+        if (!BasicHeadPoseMeasurement.isBasicHeadPoseDetecting()) {
+            if (noFaceDetector.isNoFace()) {
+                headPoseAttentionAnalyzer.increaseTotalInattentionFrame()
+            } else {
+                headPoseAttentionAnalyzer.analyzeAttention(rotX, rotY, rotZ)
+            }
+
+            headPoseAttentionAnalyzer.assesAttention()
+        }
     }
 
     private fun noFaceDetection() {
@@ -372,6 +339,60 @@ class FaceDetectionProcessor(
         }
     }
 
+    private fun restartBasicHeadPoseMeasurement() {
+        if (BasicHeadPoseMeasurement.isBasicHeadPoseMeasurementStarting()) {
+            // Reset no face detector
+            noFaceDetector.resetDetector()
+            drowsinessDetector.resetDetector()
+
+            BasicHeadPoseMeasurement.setHasToRestart(true)
+            BasicHeadPoseMeasurement.setIsBasicHeadPoseMeasurementStarting(false)
+            BasicHeadPoseMeasurement.setTotalFrame(0)
+            BasicHeadPoseMeasurement.setSumOfHeadEulerX(0f)
+            BasicHeadPoseMeasurement.setSumOfHeadEulerY(0f)
+            BasicHeadPoseMeasurement.setSumOfHeadEulerZ(0f)
+
+            MaterialAlertDialogBuilder(context)
+                .setTitle(R.string.warning)
+                .setMessage(R.string.head_pose_retry_msg)
+                .setIcon(R.drawable.ic_warning)
+                .setPositiveButton(R.string.retry) { dialog, _ ->
+                    restartHeadPoseMeasurement()
+                    dialog.dismiss()
+                }
+                .setCancelable(false)
+                .show()
+        }
+    }
+
+    private fun retryBasicHeadPoseMeasurement() {
+        BasicHeadPoseMeasurement.setIsBasicHeadPoseDetecting(true)
+
+        MaterialAlertDialogBuilder(context)
+            .setTitle(R.string.retry_basic_head_pose_measurement_msg)
+            .setMessage(R.string.retyr_basic_head_pose_measurement_content)
+            .setPositiveButton(R.string.retry) { dialog, _ ->
+                BasicHeadPoseMeasurement.setIsBasicHeadPoseMeasurementStarting(false)
+                BasicHeadPoseMeasurement.setTotalFrame(0)
+                BasicHeadPoseMeasurement.setSumOfHeadEulerX(0f)
+                BasicHeadPoseMeasurement.setSumOfHeadEulerY(0f)
+                BasicHeadPoseMeasurement.setSumOfHeadEulerZ(0f)
+
+                restartHeadPoseMeasurement()
+
+                // Reset the variables of drowsiness and no face detection
+                drowsinessDetector.resetDetector()
+                noFaceDetector.resetDetector()
+
+                dialog.dismiss()
+            }
+            .setNegativeButton(R.string.cancel) {dialog, _ ->
+                BasicHeadPoseMeasurement.setIsBasicHeadPoseDetecting(false)
+                dialog.dismiss()
+            }
+            .show()
+    }
+
     private fun restartHeadPoseMeasurement() {
         tvBasicHeadPoseTimer.text = ""
 
@@ -384,7 +405,7 @@ class FaceDetectionProcessor(
                 BasicHeadPoseMeasurement.setIsBasicHeadPoseMeasurementStarting(true)
                 BasicHeadPoseMeasurement.setHasToRestart(false)
 
-                object : CountDownTimer(5000, 1000) {
+                basicHeadPoseTimer = object : CountDownTimer(5000, 1000) {
                     override fun onTick(millisUntilFinished: Long) {
                         if (!BasicHeadPoseMeasurement.hasToRestart()) {
                             tvBasicHeadPoseTimer.visibility = View.VISIBLE
@@ -396,6 +417,10 @@ class FaceDetectionProcessor(
                                     (millisUntilFinished / 1000).toInt()),
                                 Snackbar.LENGTH_INDEFINITE
                             ).show()*/
+                        } else {
+                            if (basicHeadPoseTimer != null) {
+                                basicHeadPoseTimer!!.cancel()
+                            }
                         }
                     }
 

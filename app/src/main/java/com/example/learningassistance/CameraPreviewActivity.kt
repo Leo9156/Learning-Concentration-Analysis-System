@@ -49,6 +49,7 @@ class CameraPreviewActivity : AppCompatActivity() {
     private lateinit var textViewBasicHeadPoseTimer: TextView
     private lateinit var btnRetryBasicHeadPoseMeasurement: MaterialButton
     private lateinit var faceDetectionProcessor: FaceDetectionProcessor
+    private var basicHeadPoseTimer: CountDownTimer? = null
     private var learningTime: Int = 0
     private lateinit var cameraProvider: ProcessCameraProvider
     private var cameraExecutor = Executors.newSingleThreadExecutor()
@@ -128,12 +129,19 @@ class CameraPreviewActivity : AppCompatActivity() {
         snackBar.setAction(R.string.start) {
             BasicHeadPoseMeasurement.setIsBasicHeadPoseMeasurementStarting(true)
 
-            object : CountDownTimer(5000, 1000) {
+            basicHeadPoseTimer = object : CountDownTimer(5000, 1000) {
                 override fun onTick(millisUntilFinished: Long) {
+                    BasicHeadPoseMeasurement.setIsTimerCounting(true)
+
                     if (!BasicHeadPoseMeasurement.hasToRestart()) {
                         textViewBasicHeadPoseTimer.visibility = View.VISIBLE
                         textViewBasicHeadPoseTimer.text = String.format(context.getString(R.string.basic_head_pose_counting_msg), (millisUntilFinished / 1000))
+                    } else {
+                        if (basicHeadPoseTimer != null) {
+                            basicHeadPoseTimer!!.cancel()
+                        }
                     }
+
                         /*val snackBar: Snackbar = Snackbar.make(
                             root,
                             String.format(
@@ -175,8 +183,10 @@ class CameraPreviewActivity : AppCompatActivity() {
                     } else {
                         snackBar.dismiss()
                     }
+
+                    BasicHeadPoseMeasurement.setIsTimerCounting(false)
                 }
-            }.start()
+            }
         }
             .show()
     }
