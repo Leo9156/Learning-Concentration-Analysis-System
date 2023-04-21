@@ -24,7 +24,7 @@ class DrowsinessDetection(private val context: Context) {
     private var duration: Long = 0
     private var perClose = 0f
     private var closedEyeThreshold = 0.2
-    private var detectionPeriodMs: Long = 10000
+    private var detectionPeriodMs: Long = 30000
     private var awakeThreshold = 0.15
     private var fatigueThreshold = 0.3
     private var EAR = 1.0f

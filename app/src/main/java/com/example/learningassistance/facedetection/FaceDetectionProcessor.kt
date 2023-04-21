@@ -37,6 +37,7 @@ class FaceDetectionProcessor(
     private val tvNoFaceMsg: TextView,
     private val tvDrowsinessTimer: TextView,
     private val tvNoFaceTimer: TextView,
+    private val tvHeadPoseAttentionAnalyzerTimer: TextView,
     private val tvBasicHeadPoseTimer: TextView,
     private val btnRetryBasicHeadPoseMeasurement: MaterialButton
     ): ImageAnalysis.Analyzer {
@@ -72,7 +73,7 @@ class FaceDetectionProcessor(
     private val faceMeshDetector = FaceMeshDetection.getClient(faceMeshOptions.build())
 
     // Create the analyzer based on head pose
-    private val headPoseAttentionAnalyzer = HeadPoseAttentionAnalysis()
+    private val headPoseAttentionAnalyzer = HeadPoseAttentionAnalysis(context, root, tvHeadPoseAttentionAnalyzerTimer)
 
     @SuppressLint("UnsafeOptInUsageError")
     override fun analyze(imageProxy: ImageProxy) {
@@ -133,6 +134,8 @@ class FaceDetectionProcessor(
 
                             // Measure the basic head pose for normalization
                             if (BasicHeadPoseMeasurement.isBasicHeadPoseDetecting()) {
+                                headPoseAttentionAnalyzer.resetAnalyzer()
+
                                 if (BasicHeadPoseMeasurement.isBasicHeadPoseMeasurementStarting()) {
                                     noFaceDetector.resetDetector()
                                     drowsinessDetector.resetDetector()
@@ -193,10 +196,12 @@ class FaceDetectionProcessor(
             if (noFaceDetector.isNoFace()) {
                 headPoseAttentionAnalyzer.increaseTotalInattentionFrame()
             } else {
-                headPoseAttentionAnalyzer.analyzeAttention(rotX, rotY, rotZ)
+                headPoseAttentionAnalyzer.analyzeHeadPose(rotX, rotY, rotZ)
             }
 
-            headPoseAttentionAnalyzer.assesAttention()
+            headPoseAttentionAnalyzer.evaluateAttention()
+
+            headPoseAttentionAnalyzer.analyzeAttentiveness()
         }
     }
 

@@ -8,7 +8,6 @@ object BasicHeadPoseMeasurement {
     private var isBasicHeadPoseDetecting = true  // Whether the system is in the basic head pose detection phase
     private var hasToRestart = false  // When no faces detected, basic head pose measurement has to restart
     private var hasToRetry = false  // Whether the user clicks the retry button and wants to measure the basic head pose again
-    private var isTimerCounting = false
     private var totalFrameNumber = 0
     private var measureDurationMs: Int = 5000
     private var basicHeadEulerX = 0f
@@ -43,14 +42,6 @@ object BasicHeadPoseMeasurement {
 
     fun hasToRestart(): Boolean {
         return this. hasToRestart
-    }
-
-    fun isTimerCounting(): Boolean {
-        return this.isTimerCounting
-    }
-
-    fun setIsTimerCounting(flag: Boolean) {
-        this.isTimerCounting = flag
     }
 
     fun setMeasureDurationMs(t: Int) {

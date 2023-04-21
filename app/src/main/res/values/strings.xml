@@ -10,6 +10,7 @@
     <string name="face_detector_latency">latency: </string>
     <string name="drowsiness_timer">%1$d</string>
     <string name="no_face_timer">%1$d</string>
+    <string name="head_pose_attention_timer">%1$d</string>
     <string name="drowsiness_tired_msg">You are tired</string>
     <string name="warning">WARNING!</string>
     <string name="are_you_still_there">Are you still there?</string>
@@ -36,5 +37,6 @@
     <string name="head_pose_retry_msg">No faces detected while measuring basic head poses. Please try again!</string>
     <string name="retry_basic_head_pose_measurement_msg">Retry basic head pose measurement?</string>
     <string name="retyr_basic_head_pose_measurement_content">Do you want to measure your basic head pose again?</string>
+    <string name="head_pose_inattention_msg">Don\'t look around! Please pay attention</string>
 
 </resources>

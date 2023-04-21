@@ -46,6 +46,7 @@ class CameraPreviewActivity : AppCompatActivity() {
     private lateinit var textViewNoFaceMsg: TextView
     private lateinit var textViewDrowsinessTimer: TextView
     private lateinit var textViewNoFaceTimer: TextView
+    private lateinit var textViewHeadPoseAttentionAnalyzerTimer: TextView
     private lateinit var textViewBasicHeadPoseTimer: TextView
     private lateinit var btnRetryBasicHeadPoseMeasurement: MaterialButton
     private lateinit var faceDetectionProcessor: FaceDetectionProcessor
@@ -73,6 +74,7 @@ class CameraPreviewActivity : AppCompatActivity() {
         textViewNoFaceMsg = findViewById(R.id.textViewNoFaceMsg)
         textViewDrowsinessTimer = findViewById(R.id.textViewDrowsinessTimer)
         textViewNoFaceTimer= findViewById(R.id.textViewNoFaceTimer)
+        textViewHeadPoseAttentionAnalyzerTimer= findViewById(R.id.textViewHeadPoseAttentionAnalyzerTimer)
         textViewBasicHeadPoseTimer= findViewById(R.id.textViewBasicHeadPoseTimer)
         btnRetryBasicHeadPoseMeasurement = findViewById(R.id.buttonRetryBasicHeadPoseMeasurement)
         faceDetectionProcessor = FaceDetectionProcessor(
@@ -89,9 +91,14 @@ class CameraPreviewActivity : AppCompatActivity() {
             textViewNoFaceMsg,
             textViewDrowsinessTimer,
             textViewNoFaceTimer,
+            textViewHeadPoseAttentionAnalyzerTimer,
             textViewBasicHeadPoseTimer,
             btnRetryBasicHeadPoseMeasurement
         )
+
+        textViewHeadPoseAttentionAnalyzerTimer.visibility = View.INVISIBLE
+        textViewDrowsinessTimer.visibility = View.INVISIBLE
+        textViewNoFaceTimer.visibility = View.INVISIBLE
 
         // Hide the btnRetryBasicHeadPoseMeasurement when the basic head pose is detecting
         if (BasicHeadPoseMeasurement.isBasicHeadPoseDetecting()) {
@@ -131,8 +138,6 @@ class CameraPreviewActivity : AppCompatActivity() {
 
             basicHeadPoseTimer = object : CountDownTimer(5000, 1000) {
                 override fun onTick(millisUntilFinished: Long) {
-                    BasicHeadPoseMeasurement.setIsTimerCounting(true)
-
                     if (!BasicHeadPoseMeasurement.hasToRestart()) {
                         textViewBasicHeadPoseTimer.visibility = View.VISIBLE
                         textViewBasicHeadPoseTimer.text = String.format(context.getString(R.string.basic_head_pose_counting_msg), (millisUntilFinished / 1000))
@@ -183,10 +188,8 @@ class CameraPreviewActivity : AppCompatActivity() {
                     } else {
                         snackBar.dismiss()
                     }
-
-                    BasicHeadPoseMeasurement.setIsTimerCounting(false)
                 }
-            }
+            }.start()
         }
             .show()
     }

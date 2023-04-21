@@ -1,9 +1,17 @@
 package com.example.learningassistance.facedetection
 
+import android.content.Context
 import android.util.Log
-import com.example.learningassistance.facedetection.BasicHeadPoseMeasurement.resetProperties
+import android.widget.TextView
+import androidx.constraintlayout.widget.ConstraintLayout
+import com.example.learningassistance.R
+import com.google.android.material.snackbar.Snackbar
 
-class HeadPoseAttentionAnalysis {
+class HeadPoseAttentionAnalysis(
+    private val context: Context,
+    private val root: ConstraintLayout,
+    private val tvHeadPoseAttentionAnalyzerTimer: TextView
+) {
     private var slidingWindowSize = 30
     private var totalAttentionFrame = 0
     private var totalInattentionFrame = 0
@@ -14,6 +22,17 @@ class HeadPoseAttentionAnalysis {
     //private var zPositiveThreshold = 0f
     //private var zNegativeThreshold = 0f
     private var isAttention = true
+
+    // Temporary method to show whether the user is attentive
+    private var duration: Long = 0
+    private var startTimerMs = System.currentTimeMillis()
+    private var endTimerMs = System.currentTimeMillis()
+    private var perAttention = 0f
+    private var inattentionThreshold = 0.5f
+    private var totalFrame = 0
+    private var inattentionFrame = 0
+
+
 
     fun setSlidingWindowSize(size: Int) {
         this.slidingWindowSize = size
@@ -55,7 +74,7 @@ class HeadPoseAttentionAnalysis {
         this.zPositiveThreshold = angle
     }*/
 
-    fun analyzeAttention(eulerX: Float, eulerY: Float, eulerZ: Float) {
+    fun analyzeHeadPose(eulerX: Float, eulerY: Float, eulerZ: Float) {
         if (eulerX > xPositiveThreshold || eulerX < xNegativeThreshold) {
             this.totalInattentionFrame++
         } else if (eulerY > yPositiveThreshold || eulerY < yNegativeThreshold) {
@@ -65,13 +84,44 @@ class HeadPoseAttentionAnalysis {
         }
     }
 
-    fun assesAttention() {
+    fun evaluateAttention() {
         if (totalAttentionFrame + totalInattentionFrame == slidingWindowSize) {
             isAttention = totalAttentionFrame >= totalInattentionFrame
-            resetProperties()
+
+            totalFrame++
+            if (!isAttention) {
+                inattentionFrame++
+            }
+
+            totalAttentionFrame = 0
+            totalInattentionFrame = 0
 
             Log.v("FaceDetectionProcessor", "attention state: $isAttention")
         }
+    }
+
+    fun analyzeAttentiveness() {
+        endTimerMs = System.currentTimeMillis()
+        duration = endTimerMs - startTimerMs
+
+        tvHeadPoseAttentionAnalyzerTimer.text = context.getString(R.string.head_pose_attention_timer, duration / 1000)
+
+        if (duration >= 30000) {
+            perAttention = inattentionFrame.toFloat() / totalFrame.toFloat()
+
+            if (perAttention > inattentionThreshold) {
+                Snackbar.make(root, R.string.head_pose_inattention_msg, Snackbar.LENGTH_SHORT)
+                    .show()
+            }
+
+            resetAnalyzer()
+        }
+    }
+
+    fun resetAnalyzer() {
+        totalFrame = 0
+        inattentionFrame = 0
+        startTimerMs = System.currentTimeMillis()
     }
 
     private fun resetProperties() {
