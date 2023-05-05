@@ -1,6 +1,7 @@
 package com.example.learningassistance.facedetection
 
 import android.content.Context
+import android.media.MediaPlayer
 import android.util.Log
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -22,8 +23,10 @@ class HeadPoseAttentionAnalysis(
     //private var zPositiveThreshold = 0f
     //private var zNegativeThreshold = 0f
     private var isAttention = true
+    private lateinit var mediaPlayer: MediaPlayer
 
-    // Temporary method to show whether the user is attentive
+
+    // TODO: Temporary method to show whether the user is attentive
     private var duration: Long = 0
     private var startTimerMs = System.currentTimeMillis()
     private var endTimerMs = System.currentTimeMillis()
@@ -112,6 +115,12 @@ class HeadPoseAttentionAnalysis(
             if (perAttention > inattentionThreshold) {
                 Snackbar.make(root, R.string.head_pose_inattention_msg, Snackbar.LENGTH_SHORT)
                     .show()
+
+                mediaPlayer = MediaPlayer.create(context, R.raw.attention_alarm)
+                mediaPlayer.setOnCompletionListener { mp ->
+                    mp.release()
+                }
+                mediaPlayer.start()
             }
 
             resetAnalyzer()

@@ -2,6 +2,7 @@ package com.example.learningassistance.facedetection
 
 import android.content.Context
 import android.media.MediaPlayer
+import android.media.RingtoneManager
 import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
@@ -106,7 +107,9 @@ class NoFaceDetection(private val context: Context) {
     }
 
     fun playAlarm() {
+        //val alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
         mediaPlayer = MediaPlayer.create(context, R.raw.alarm_sound)
+        //mediaPlayer = MediaPlayer.create(context, alarmUri)
         mediaPlayer.isLooping = true
         mediaPlayer.start()
         isAlarmPlaying = true

@@ -23,8 +23,8 @@ import androidx.camera.view.PreviewView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.startActivity
 import com.example.learningassistance.facedetection.BasicHeadPoseMeasurement
-import com.example.learningassistance.facedetection.FaceDetectionProcessor
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
@@ -54,6 +54,7 @@ class CameraPreviewActivity : AppCompatActivity() {
     private var learningTime: Int = 0
     private lateinit var cameraProvider: ProcessCameraProvider
     private var cameraExecutor = Executors.newSingleThreadExecutor()
+    private lateinit var mediaPlayer: MediaPlayer
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,7 +62,6 @@ class CameraPreviewActivity : AppCompatActivity() {
 
         root = findViewById(R.id.root)
         viewFinder = findViewById(R.id.viewFinder)
-        //btnStartDetection = findViewById(R.id.buttonStartDetection)
         //faceGraphicOverlayView = findViewById(R.id.faceGraphicOverlay)
         textViewEulerX = findViewById(R.id.textViewEulerX)
         textViewEulerY = findViewById(R.id.textViewEulerY)
@@ -81,24 +81,23 @@ class CameraPreviewActivity : AppCompatActivity() {
             this,
             //faceGraphicOverlayView,
             root,
-            textViewEulerX,
-            textViewEulerY,
-            textViewEulerZ,
-            textViewRightEAR,
-            textViewLeftEAR,
-            textViewEAR,
-            textViewLatencyTime,
-            textViewNoFaceMsg,
-            textViewDrowsinessTimer,
-            textViewNoFaceTimer,
+            this,
+            //textViewEulerX,
+            //textViewEulerY,
+            //textViewEulerZ,
+            //textViewRightEAR,
+            //textViewLeftEAR,
+            //textViewEAR,
+            //textViewLatencyTime,
+            //textViewNoFaceMsg,
             textViewHeadPoseAttentionAnalyzerTimer,
-            textViewBasicHeadPoseTimer,
+            //textViewBasicHeadPoseTimer,
             btnRetryBasicHeadPoseMeasurement
         )
 
-        textViewHeadPoseAttentionAnalyzerTimer.visibility = View.INVISIBLE
-        textViewDrowsinessTimer.visibility = View.INVISIBLE
-        textViewNoFaceTimer.visibility = View.INVISIBLE
+        //textViewHeadPoseAttentionAnalyzerTimer.visibility = View.INVISIBLE
+        //textViewDrowsinessTimer.visibility = View.INVISIBLE
+        //textViewNoFaceTimer.visibility = View.INVISIBLE
 
         // Hide the btnRetryBasicHeadPoseMeasurement when the basic head pose is detecting
         if (BasicHeadPoseMeasurement.isBasicHeadPoseDetecting()) {
@@ -172,19 +171,14 @@ class CameraPreviewActivity : AppCompatActivity() {
 
                         textViewBasicHeadPoseTimer.visibility = View.INVISIBLE
 
-                        val notificationUri =
+                        //val notificationUri =
                             RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
-                        val mediaPlayer = MediaPlayer.create(context, notificationUri)
-
-                        if (mediaPlayer == null) {
-                            Log.e(TAG, "mediaPlayer create failed")
-                        } else {
-                            mediaPlayer.start()
-
-                            if (!mediaPlayer.isPlaying) {
-                                mediaPlayer.release()
-                            }
+                        //mediaPlayer = MediaPlayer.create(context, notificationUri)
+                        mediaPlayer = MediaPlayer.create(context, R.raw.basic_head_pose_complete)
+                        mediaPlayer.setOnCompletionListener { mp ->
+                            mp.release()
                         }
+                        mediaPlayer.start()
                     } else {
                         snackBar.dismiss()
                     }
@@ -297,6 +291,83 @@ class CameraPreviewActivity : AppCompatActivity() {
 
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
         ContextCompat.checkSelfPermission(baseContext, it) == PackageManager.PERMISSION_GRANTED
+    }
+
+    fun setLatencyTextView(msg: String) {
+        runOnUiThread {
+            textViewLatencyTime.text = msg
+        }
+    }
+
+    fun setNoFaceTextView() {
+        textViewEulerX.text = ""
+        textViewEulerY.text = ""
+        textViewEulerZ.text = ""
+        textViewRightEAR.text = ""
+        textViewLeftEAR.text = ""
+        textViewLatencyTime.text = ""
+        textViewEAR.text = ""
+        textViewNoFaceMsg.text = getString(R.string.no_face_detected_info)
+    }
+
+    /*private fun setFaceGraphicOverlay(faces: List<Face>, image: InputImage, rotation: Int) {
+        fgOverlay.setFace(faces)
+        fgOverlay.setRotation(rotation)
+        fgOverlay.setImageSize(image.width.toFloat(), image.height.toFloat())
+        fgOverlay.setPreviewSize(fgOverlay.width.toFloat(), fgOverlay.height.toFloat())
+    }*/
+
+
+    fun setEulerAnglesTextView(rotX: Float, rotY: Float, rotZ: Float) {
+        val eulerXMsg = String.format(getString(R.string.eulerx), rotX)
+        val eulerYMsg = String.format(getString(R.string.eulery), rotY)
+        val eulerZMsg = String.format(getString(R.string.eulerz), rotZ)
+        textViewEulerX.text = eulerXMsg
+        textViewEulerY.text = eulerYMsg
+        textViewEulerZ.text = eulerZMsg
+    }
+
+    fun setLeftEyeTextView(leftEAR: Float) {
+        textViewLeftEAR.text = String.format(getString(R.string.left_eye_open), leftEAR)
+    }
+
+    fun setRightEyeTextView(rightEAR: Float) {
+        textViewRightEAR.text = String.format(getString(R.string.right_eye_open), rightEAR)
+    }
+
+    fun setEARTextView(ear: Float) {
+        textViewEAR.text = String.format(getString(R.string.ear), ear)
+    }
+
+    fun resetNoFaceTextView() {
+        textViewNoFaceMsg.text = ""
+    }
+
+    fun setDrowsinessTimerTextView(time: Long) {
+        runOnUiThread {
+            textViewDrowsinessTimer.text = getString(R.string.drowsiness_timer, time)
+
+        }
+    }
+
+    fun setNoFaceTimerTextView(time: Long) {
+        runOnUiThread {
+            textViewNoFaceTimer.text = getString(R.string.no_face_timer, time)
+        }
+    }
+
+    fun setBasicHeadPoseTimerTexView(time: Long) {
+        textViewBasicHeadPoseTimer.text = String.format(getString(R.string.basic_head_pose_counting_msg), time)
+    }
+
+    fun setBasicHeadPoseTimerTextViewVisibility(flag: Boolean) = if (flag) {
+        textViewBasicHeadPoseTimer.visibility = View.VISIBLE
+    } else {
+        textViewBasicHeadPoseTimer.visibility = View.INVISIBLE
+    }
+
+    fun resetBasicHeadPoseTimerTextView() {
+        textViewBasicHeadPoseTimer.text = ""
     }
 
     companion object {

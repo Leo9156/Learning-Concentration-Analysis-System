@@ -1,4 +1,4 @@
-package com.example.learningassistance.facedetection
+package com.example.learningassistance
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -13,7 +13,10 @@ import androidx.appcompat.app.AlertDialog
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
 import androidx.constraintlayout.widget.ConstraintLayout
-import com.example.learningassistance.R
+import com.example.learningassistance.facedetection.BasicHeadPoseMeasurement
+import com.example.learningassistance.facedetection.DrowsinessDetection
+import com.example.learningassistance.facedetection.HeadPoseAttentionAnalysis
+import com.example.learningassistance.facedetection.NoFaceDetection
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
@@ -27,18 +30,19 @@ class FaceDetectionProcessor(
     private val context: Context,
     //private val fgOverlay: FaceGraphicOverlayView,
     private val root: ConstraintLayout,
-    private val tvEulerX: TextView,
-    private val tvEulerY: TextView,
-    private val tvEulerZ: TextView,
-    private val tvRightEAR: TextView,
-    private val tvLeftEAR: TextView,
-    private val tvEAR: TextView,
-    private val tvLatencyTime: TextView,
-    private val tvNoFaceMsg: TextView,
-    private val tvDrowsinessTimer: TextView,
-    private val tvNoFaceTimer: TextView,
+    private val cameraPreviewActivity: CameraPreviewActivity,
+    //private val tvEulerX: TextView,
+    //private val tvEulerY: TextView,
+    //private val tvEulerZ: TextView,
+    //private val tvRightEAR: TextView,
+    //private val tvLeftEAR: TextView,
+    //private val tvEAR: TextView,
+    //private val tvLatencyTime: TextView,
+    //private val tvNoFaceMsg: TextView,
+    //private val tvDrowsinessTimer: TextView,
+    //private val tvNoFaceTimer: TextView,
     private val tvHeadPoseAttentionAnalyzerTimer: TextView,
-    private val tvBasicHeadPoseTimer: TextView,
+    //private val tvBasicHeadPoseTimer: TextView,
     private val btnRetryBasicHeadPoseMeasurement: MaterialButton
     ): ImageAnalysis.Analyzer {
 
@@ -46,6 +50,9 @@ class FaceDetectionProcessor(
     private var rotX = 0f
     private var rotY = 0f
     private var rotZ = 0f
+
+    // The media player for basic head pose measurement
+    private lateinit var mediaPlayer: MediaPlayer
 
     // The count down timer of the basic head pose
     private var basicHeadPoseTimer: CountDownTimer? = null
@@ -89,13 +96,9 @@ class FaceDetectionProcessor(
                     // Dealing with no face detected situations
                     if (faces.size == 0) {
                         setNoFaceMsg()  // Show the no face message to the user
-
                         noFaceDetector.setIsNoFace(true)  // Set no face flag to true
-
                         drowsinessDetector.resetEAR()   // Reset leftEyeEAR and rightEyeEAR
-
                         restartBasicHeadPoseMeasurement()  // Restart basic head pose measuring if the user is measuring basic head pose
-
                     } else {
                         // Set the information about the face graphic overlay
                         //setFaceGraphicOverlay(faces, image, rotation)
@@ -105,32 +108,12 @@ class FaceDetectionProcessor(
 
                         for (face in faces) {
                             // reset the textView of no face detection
-                            tvNoFaceMsg.text = ""
+                            cameraPreviewActivity.resetNoFaceTextView()
 
                             // Get the euler angles of the detected face
                             rotX = face.headEulerAngleX
                             rotY = face.headEulerAngleY
                             rotZ = face.headEulerAngleZ
-
-                            val faceMeshResult = faceMeshDetector.process(image)
-                                .addOnSuccessListener { faceMeshes ->
-                                    if (faceMeshes.size == 0) {
-                                        Log.v(TAG, "face mesh no face")
-                                        // Reset EAR
-                                        drowsinessDetector.resetEAR()
-                                    } else {
-                                        for (faceMesh in faceMeshes) {
-                                            drowsinessDetector.setRotX(rotX)
-                                            drowsinessDetector.setRotY(rotY)
-                                            drowsinessDetector.setRotZ(rotZ)
-                                            drowsinessDetector.calculateEAR(faceMesh.allPoints)
-                                        }
-                                    }
-                                }
-                                .addOnFailureListener{ e ->
-                                    // TODO: add alert dialog
-                                    Log.w(TAG, "Face detector failed. $e")
-                                }
 
                             // Measure the basic head pose for normalization
                             if (BasicHeadPoseMeasurement.isBasicHeadPoseDetecting()) {
@@ -158,27 +141,13 @@ class FaceDetectionProcessor(
                         rotY -= BasicHeadPoseMeasurement.getBasicHeadEulerY()
                         rotZ -= BasicHeadPoseMeasurement.getBasicHeadEulerZ()
                         setEulerAnglesMsg(rotX, rotY, rotZ)
-
-                        //Show the EAR of each eye on the textView
-                        if (drowsinessDetector.getEAR() != 1.0f) {
-                            setRightEyeMsg(drowsinessDetector.getRightEAR())
-                            setLeftEyeMsg(drowsinessDetector.getLeftEAR())
-                            setEARMsg(drowsinessDetector.getEAR())
-                        }
                     }
 
                     // No face detection
                     noFaceDetection()
 
-                    // Drowsiness detection
-                    drowsinessDetection()
-
                     // Attention analysis based on head pose
                     headPoseAttentivenessAnalysis(rotX, rotY, rotZ)
-
-                    // Calculate the processing time
-                    val detectionEndTimeMs = System.currentTimeMillis()
-                    processTime(detectionStartTimeMs, detectionEndTimeMs)
                 }
                 .addOnFailureListener { e ->
                     // TODO: Add alert dialog
@@ -187,6 +156,40 @@ class FaceDetectionProcessor(
                 .addOnCompleteListener {
                     imageProxy.close()
                 }
+
+            val faceMeshResult = faceMeshDetector.process(image)
+                .addOnSuccessListener { faceMeshes ->
+                    if (faceMeshes.size == 0) {
+                        Log.v(TAG, "face mesh no face")
+                        // Reset EAR
+                        drowsinessDetector.resetEAR()
+                    } else {
+                        for (faceMesh in faceMeshes) {
+                            drowsinessDetector.calculateEAR(faceMesh.allPoints)
+
+                            //Show the EAR of each eye on the textView
+                            if (drowsinessDetector.getEAR() != 1.0f && !noFaceDetector.isNoFace()) {
+                                setRightEyeMsg(drowsinessDetector.getRightEAR())
+                                setLeftEyeMsg(drowsinessDetector.getLeftEAR())
+                                setEARMsg(drowsinessDetector.getEAR())
+                            }
+                        }
+                    }
+
+                    // Drowsiness detection
+                    drowsinessDetection()
+                }
+                .addOnFailureListener { e ->
+                // TODO: add alert dialog
+                Log.w(TAG, "Face mesh detector failed. $e")
+                }
+                .addOnCompleteListener {
+                    imageProxy.close()
+                }
+
+            // Calculate the processing time
+            val detectionEndTimeMs = System.currentTimeMillis()
+            processTime(detectionStartTimeMs, detectionEndTimeMs)
         }
 
     }
@@ -216,7 +219,7 @@ class FaceDetectionProcessor(
         }
 
         // Show the timer
-        tvNoFaceTimer.text = context.getString(R.string.no_face_timer, noFaceDetector.getDuration() / 1000)
+        cameraPreviewActivity.setNoFaceTimerTextView(noFaceDetector.getDuration() / 1000)
 
         if (noFaceDetector.getDuration() >= noFaceDetector.getDetectionPeriodMs()) {
             noFaceDetector.calculatePerNoFace()
@@ -279,7 +282,7 @@ class FaceDetectionProcessor(
         }
 
         // Show the timer
-        tvDrowsinessTimer.text = context.getString(R.string.drowsiness_timer, drowsinessDetector.getDuration() / 1000)
+        cameraPreviewActivity.setDrowsinessTimerTextView(drowsinessDetector.getDuration() / 1000)
 
         if (drowsinessDetector.getDuration() >= drowsinessDetector.getDetectionPeriodMs()) {
             drowsinessDetector.calculatePerClose()
@@ -399,7 +402,7 @@ class FaceDetectionProcessor(
     }
 
     private fun restartHeadPoseMeasurement() {
-        tvBasicHeadPoseTimer.text = ""
+        cameraPreviewActivity.resetBasicHeadPoseTimerTextView()
 
         // Reset drowsiness and no face detectors
         drowsinessDetector.resetDetector()
@@ -413,8 +416,8 @@ class FaceDetectionProcessor(
                 basicHeadPoseTimer = object : CountDownTimer(5000, 1000) {
                     override fun onTick(millisUntilFinished: Long) {
                         if (!BasicHeadPoseMeasurement.hasToRestart()) {
-                            tvBasicHeadPoseTimer.visibility = View.VISIBLE
-                            tvBasicHeadPoseTimer.text = String.format(context.getString(R.string.basic_head_pose_counting_msg), (millisUntilFinished / 1000))
+                            cameraPreviewActivity.setBasicHeadPoseTimerTextViewVisibility(true)
+                            cameraPreviewActivity.setBasicHeadPoseTimerTexView(millisUntilFinished / 1000)
                             /*Snackbar.make(
                                 root,
                                 String.format(
@@ -431,22 +434,17 @@ class FaceDetectionProcessor(
 
                     override fun onFinish() {
                         if (!BasicHeadPoseMeasurement.hasToRestart()) {
-                            tvBasicHeadPoseTimer.visibility = View.INVISIBLE
+                            cameraPreviewActivity.setBasicHeadPoseTimerTextViewVisibility(false)
                             Snackbar.make(root, R.string.basic_head_pose_complete_msg, Snackbar.LENGTH_SHORT)
                                 .show()
 
-                            val notificationUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
-                            val mediaPlayer = MediaPlayer.create(context, notificationUri)
-
-                            if (mediaPlayer == null) {
-                                Log.e(TAG, "mediaPlayer create failed")
-                            } else {
-                                mediaPlayer.start()
-
-                                if (!mediaPlayer.isPlaying) {
-                                    mediaPlayer.release()
-                                }
+                            //val notificationUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+                            //mediaPlayer = MediaPlayer.create(context, notificationUri)
+                            mediaPlayer = MediaPlayer.create(context, R.raw.basic_head_pose_complete)
+                            mediaPlayer.setOnCompletionListener { mp ->
+                                mp.release()
                             }
+                            mediaPlayer.start()
                         }
                     }
 
@@ -531,18 +529,11 @@ class FaceDetectionProcessor(
     private fun processTime(detectionStartTimeMs: Long, detectionEndTimeMs: Long) {
         val latencyMs = detectionEndTimeMs - detectionStartTimeMs
         val latencyMsg =context.getString(R.string.face_detector_latency) + "$latencyMs" + " ms"
-        tvLatencyTime.text = latencyMsg
+        cameraPreviewActivity.setLatencyTextView(latencyMsg)
     }
 
     private fun setNoFaceMsg() {
-        tvEulerX.text = ""
-        tvEulerY.text = ""
-        tvEulerZ.text = ""
-        tvRightEAR.text = ""
-        tvLeftEAR.text = ""
-        tvLatencyTime.text = ""
-        tvEAR.text = ""
-        tvNoFaceMsg.text = context.getString(R.string.no_face_detected_info)
+        cameraPreviewActivity.setNoFaceTextView()
     }
 
     /*private fun setFaceGraphicOverlay(faces: List<Face>, image: InputImage, rotation: Int) {
@@ -554,24 +545,19 @@ class FaceDetectionProcessor(
 
 
     private fun setEulerAnglesMsg(rotX: Float, rotY: Float, rotZ: Float) {
-        val eulerXMsg = String.format(context.getString(R.string.eulerx), rotX)
-        val eulerYMsg = String.format(context.getString(R.string.eulery), rotY)
-        val eulerZMsg = String.format(context.getString(R.string.eulerz), rotZ)
-        tvEulerX.text = eulerXMsg
-        tvEulerY.text = eulerYMsg
-        tvEulerZ.text = eulerZMsg
+        cameraPreviewActivity.setEulerAnglesTextView(rotX, rotY, rotZ)
     }
 
     private fun setLeftEyeMsg(leftEAR: Float) {
-        tvLeftEAR.text = String.format(context.getString(R.string.left_eye_open), leftEAR)
+        cameraPreviewActivity.setLeftEyeTextView(leftEAR)
     }
 
     private fun setRightEyeMsg(rightEAR: Float) {
-        tvRightEAR.text = String.format(context.getString(R.string.left_eye_open), rightEAR)
+        cameraPreviewActivity.setRightEyeTextView(rightEAR)
     }
 
     private fun setEARMsg(ear: Float) {
-        tvEAR.text = String.format(context.getString(R.string.ear), ear)
+        cameraPreviewActivity.setEARTextView(ear)
     }
 
     companion object {

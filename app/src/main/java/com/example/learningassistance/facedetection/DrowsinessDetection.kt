@@ -2,16 +2,13 @@ package com.example.learningassistance.facedetection
 
 import android.content.Context
 import android.media.MediaPlayer
+import android.media.RingtoneManager
 import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
-import android.util.Log
 import com.example.learningassistance.R
 import com.google.mlkit.vision.common.PointF3D
 import com.google.mlkit.vision.facemesh.FaceMeshPoint
-import kotlin.math.abs
-import kotlin.math.cos
-import kotlin.math.sin
 import kotlin.math.sqrt
 
 class DrowsinessDetection(private val context: Context) {
@@ -121,7 +118,9 @@ class DrowsinessDetection(private val context: Context) {
     }
 
     fun playAlarm() {
+        //val alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
         mediaPlayer = MediaPlayer.create(context, R.raw.alarm_sound)
+        //mediaPlayer = MediaPlayer.create(context, alarmUri)
         mediaPlayer.isLooping = true
         mediaPlayer.start()
         isAlarmPlaying = true
