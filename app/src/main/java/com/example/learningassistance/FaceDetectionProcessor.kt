@@ -3,7 +3,6 @@ package com.example.learningassistance
 import android.annotation.SuppressLint
 import android.content.Context
 import android.media.MediaPlayer
-import android.media.RingtoneManager
 import android.os.CountDownTimer
 import android.util.Log
 import android.view.View
@@ -25,6 +24,8 @@ import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetectorOptions
 import com.google.mlkit.vision.facemesh.FaceMeshDetection
 import com.google.mlkit.vision.facemesh.FaceMeshDetectorOptions
+import com.google.mlkit.vision.pose.PoseDetection
+import com.google.mlkit.vision.pose.accurate.AccuratePoseDetectorOptions
 
 class FaceDetectionProcessor(
     private val context: Context,
@@ -81,6 +82,12 @@ class FaceDetectionProcessor(
 
     // Create the analyzer based on head pose
     private val headPoseAttentionAnalyzer = HeadPoseAttentionAnalysis(context, root, tvHeadPoseAttentionAnalyzerTimer)
+
+    // Create the pose detector of ML kit
+    private val poseDetectOptions = AccuratePoseDetectorOptions.Builder()
+        .setDetectorMode(AccuratePoseDetectorOptions.STREAM_MODE)
+        .build()
+    private val poseDetector = PoseDetection.getClient(poseDetectOptions)
 
     @SuppressLint("UnsafeOptInUsageError")
     override fun analyze(imageProxy: ImageProxy) {
@@ -175,13 +182,23 @@ class FaceDetectionProcessor(
                             }
                         }
                     }
-
                     // Drowsiness detection
                     drowsinessDetection()
                 }
                 .addOnFailureListener { e ->
                 // TODO: add alert dialog
                 Log.w(TAG, "Face mesh detector failed. $e")
+                }
+                .addOnCompleteListener {
+                    imageProxy.close()
+                }
+
+            val poseDetectionResult = poseDetector.process(image)
+                .addOnSuccessListener { poses ->
+
+                }
+                .addOnFailureListener {
+
                 }
                 .addOnCompleteListener {
                     imageProxy.close()

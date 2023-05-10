@@ -209,7 +209,7 @@ class CameraPreviewActivity : AppCompatActivity() {
     private fun showFinishAlertDialog(context: Context) {
         MaterialAlertDialogBuilder(context)
             .setTitle(getString(R.string.complete_learning_title))
-            .setIcon(R.drawable.ic_smile)
+            .setIcon(R.drawable.ic_congratulation)
             .setMessage(R.string.complete_learning_msg)
             .setPositiveButton(R.string.view_results) { dialog, _ ->
                 // TODO: Switch to the result (After implementing result activity or fragment)

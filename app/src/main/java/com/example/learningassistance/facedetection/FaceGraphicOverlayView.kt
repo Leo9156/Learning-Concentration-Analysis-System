@@ -5,12 +5,9 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.util.AttributeSet
-import android.util.Half.toFloat
 import android.util.Log
 import android.view.View
 import com.google.mlkit.vision.face.Face
-import com.google.mlkit.vision.face.FaceContour
-import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.math.min
 
@@ -23,6 +20,15 @@ class FaceGraphicOverlayView constructor(
     private var imageHeight = 0f
     private var previewWidth = 0f
     private var previewHeight = 0f
+
+    // The number of horizontal pixels needed to be cropped on each side to fit the image with the
+    // area of overlay View after scaling.
+    private val postScaleWidthOffset = 0f
+
+    // The number of vertical pixels needed to be cropped on each side to fit the image with the
+    // area of overlay View after scaling.
+    private val postScaleHeightOffset = 0f
+
     private var rotation = 0
     private var isLandScape = true
     private var faces: List<Face>? = null
