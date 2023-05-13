@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.MediaPlayer
-import android.media.RingtoneManager
 //import android.os.Build.VERSION_CODES.R
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -23,8 +22,10 @@ import androidx.camera.view.PreviewView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.startActivity
+import com.example.learningassistance.graphicOverlay.FaceDetectionGraphicOverlay
+import com.example.learningassistance.graphicOverlay.FaceMeshGraphicOverlay
 import com.example.learningassistance.facedetection.BasicHeadPoseMeasurement
+import com.example.learningassistance.graphicOverlay.PoseGraphicOverlay
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
@@ -34,7 +35,13 @@ class CameraPreviewActivity : AppCompatActivity() {
 
     private lateinit var root: ConstraintLayout
     private lateinit var viewFinder: PreviewView
-    //private lateinit var faceGraphicOverlayView: FaceGraphicOverlayView
+
+    // Graphic overlay
+    private lateinit var faceDetectionGraphicOverlay: FaceDetectionGraphicOverlay
+    private lateinit var faceMeshGraphicOverlay: FaceMeshGraphicOverlay
+    private lateinit var poseGraphicOverlay: PoseGraphicOverlay
+
+    // Messages
     private lateinit var textViewEulerX: TextView
     private lateinit var textViewEulerY: TextView
     private lateinit var textViewEulerZ: TextView
@@ -48,6 +55,7 @@ class CameraPreviewActivity : AppCompatActivity() {
     private lateinit var textViewNoFaceTimer: TextView
     private lateinit var textViewHeadPoseAttentionAnalyzerTimer: TextView
     private lateinit var textViewBasicHeadPoseTimer: TextView
+
     private lateinit var btnRetryBasicHeadPoseMeasurement: MaterialButton
     private lateinit var faceDetectionProcessor: FaceDetectionProcessor
     private var basicHeadPoseTimer: CountDownTimer? = null
@@ -62,7 +70,11 @@ class CameraPreviewActivity : AppCompatActivity() {
 
         root = findViewById(R.id.root)
         viewFinder = findViewById(R.id.viewFinder)
-        //faceGraphicOverlayView = findViewById(R.id.faceGraphicOverlay)
+
+        faceDetectionGraphicOverlay = findViewById(R.id.faceDetectionGraphicOverlay)
+        faceMeshGraphicOverlay = findViewById(R.id.faceMeshGraphicOverlay)
+        poseGraphicOverlay = findViewById(R.id.poseGraphicOverlay)
+
         textViewEulerX = findViewById(R.id.textViewEulerX)
         textViewEulerY = findViewById(R.id.textViewEulerY)
         textViewEulerZ = findViewById(R.id.textViewEulerZ)
@@ -76,10 +88,14 @@ class CameraPreviewActivity : AppCompatActivity() {
         textViewNoFaceTimer= findViewById(R.id.textViewNoFaceTimer)
         textViewHeadPoseAttentionAnalyzerTimer= findViewById(R.id.textViewHeadPoseAttentionAnalyzerTimer)
         textViewBasicHeadPoseTimer= findViewById(R.id.textViewBasicHeadPoseTimer)
+
         btnRetryBasicHeadPoseMeasurement = findViewById(R.id.buttonRetryBasicHeadPoseMeasurement)
+
         faceDetectionProcessor = FaceDetectionProcessor(
             this,
-            //faceGraphicOverlayView,
+            faceDetectionGraphicOverlay,
+            faceMeshGraphicOverlay,
+            poseGraphicOverlay,
             root,
             this,
             //textViewEulerX,
@@ -126,7 +142,6 @@ class CameraPreviewActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-
         BasicHeadPoseMeasurement.resetProperties()
     }
 
@@ -172,7 +187,7 @@ class CameraPreviewActivity : AppCompatActivity() {
                         textViewBasicHeadPoseTimer.visibility = View.INVISIBLE
 
                         //val notificationUri =
-                            RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+                            //RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
                         //mediaPlayer = MediaPlayer.create(context, notificationUri)
                         mediaPlayer = MediaPlayer.create(context, R.raw.basic_head_pose_complete)
                         mediaPlayer.setOnCompletionListener { mp ->

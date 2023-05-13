@@ -251,10 +251,20 @@
         app:layout_constraintTop_toTopOf="parent" />
        -->
 
-    <!--
-    <com.example.learningassistance.facedetection.FaceGraphicOverlayView
-        android:id="@+id/faceGraphicOverlay"
+    <com.example.learningassistance.graphicOverlay.FaceDetectionGraphicOverlay
+        android:id="@+id/faceDetectionGraphicOverlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
-    -->
+
+    <com.example.learningassistance.graphicOverlay.FaceMeshGraphicOverlay
+        android:id="@+id/faceMeshGraphicOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <com.example.learningassistance.graphicOverlay.PoseGraphicOverlay
+        android:id="@+id/poseGraphicOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>

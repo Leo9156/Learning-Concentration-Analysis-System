@@ -12,26 +12,30 @@ import androidx.appcompat.app.AlertDialog
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
 import androidx.constraintlayout.widget.ConstraintLayout
-import com.example.learningassistance.facedetection.BasicHeadPoseMeasurement
-import com.example.learningassistance.facedetection.DrowsinessDetection
-import com.example.learningassistance.facedetection.HeadPoseAttentionAnalysis
-import com.example.learningassistance.facedetection.NoFaceDetection
+import com.example.learningassistance.graphicOverlay.FaceDetectionGraphicOverlay
+import com.example.learningassistance.graphicOverlay.FaceMeshGraphicOverlay
+import com.example.learningassistance.facedetection.*
+import com.example.learningassistance.graphicOverlay.PoseGraphicOverlay
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.face.Face
 import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetectorOptions
+import com.google.mlkit.vision.facemesh.FaceMesh
 import com.google.mlkit.vision.facemesh.FaceMeshDetection
 import com.google.mlkit.vision.facemesh.FaceMeshDetectorOptions
+import com.google.mlkit.vision.pose.Pose
 import com.google.mlkit.vision.pose.PoseDetection
 import com.google.mlkit.vision.pose.accurate.AccuratePoseDetectorOptions
 
 class FaceDetectionProcessor(
     private val context: Context,
-    //private val fgOverlay: FaceGraphicOverlayView,
+    private val faceDetectionGraphicOverlay: FaceDetectionGraphicOverlay,
+    private val faceMeshGraphicOverlay: FaceMeshGraphicOverlay,
+    private val poseGraphicOverlay: PoseGraphicOverlay,
     private val root: ConstraintLayout,
-    private val cameraPreviewActivity: CameraPreviewActivity,
     //private val tvEulerX: TextView,
     //private val tvEulerY: TextView,
     //private val tvEulerZ: TextView,
@@ -42,10 +46,11 @@ class FaceDetectionProcessor(
     //private val tvNoFaceMsg: TextView,
     //private val tvDrowsinessTimer: TextView,
     //private val tvNoFaceTimer: TextView,
-    private val tvHeadPoseAttentionAnalyzerTimer: TextView,
+    private val cameraPreviewActivity: CameraPreviewActivity,
     //private val tvBasicHeadPoseTimer: TextView,
+    private val tvHeadPoseAttentionAnalyzerTimer: TextView,
     private val btnRetryBasicHeadPoseMeasurement: MaterialButton
-    ): ImageAnalysis.Analyzer {
+): ImageAnalysis.Analyzer {
 
     // The rotation degree of pitch, yaw, and row
     private var rotX = 0f
@@ -100,6 +105,9 @@ class FaceDetectionProcessor(
             // Process the image
             val faceDetectionResult = faceDetectionDetector.process(image)
                 .addOnSuccessListener { faces ->
+                    // Set the information about the face graphic overlay
+                    setFaceDetectionGraphicOverlay(faces, image)
+
                     // Dealing with no face detected situations
                     if (faces.size == 0) {
                         setNoFaceMsg()  // Show the no face message to the user
@@ -107,9 +115,6 @@ class FaceDetectionProcessor(
                         drowsinessDetector.resetEAR()   // Reset leftEyeEAR and rightEyeEAR
                         restartBasicHeadPoseMeasurement()  // Restart basic head pose measuring if the user is measuring basic head pose
                     } else {
-                        // Set the information about the face graphic overlay
-                        //setFaceGraphicOverlay(faces, image, rotation)
-
                         // Set no face flag to false
                         noFaceDetector.setIsNoFace(false)
 
@@ -166,6 +171,9 @@ class FaceDetectionProcessor(
 
             val faceMeshResult = faceMeshDetector.process(image)
                 .addOnSuccessListener { faceMeshes ->
+                    // Set face mesh graphic overlay
+                    setFaceMeshGraphicOverlay(faceMeshes, image)
+
                     if (faceMeshes.size == 0) {
                         Log.v(TAG, "face mesh no face")
                         // Reset EAR
@@ -195,10 +203,10 @@ class FaceDetectionProcessor(
 
             val poseDetectionResult = poseDetector.process(image)
                 .addOnSuccessListener { poses ->
-
+                    setPoseGraphicOverlay(poses, image)
                 }
-                .addOnFailureListener {
-
+                .addOnFailureListener { e ->
+                    Log.w(TAG, "Pose detector failed. $e")
                 }
                 .addOnCompleteListener {
                     imageProxy.close()
@@ -492,7 +500,6 @@ class FaceDetectionProcessor(
         }
     }
 
-
     private fun showFatigueAlertDialog(context: Context) {
         drowsinessDetector.setIsFatigueDialogShowing(true)
 
@@ -549,17 +556,24 @@ class FaceDetectionProcessor(
         cameraPreviewActivity.setLatencyTextView(latencyMsg)
     }
 
+    private fun setFaceDetectionGraphicOverlay(faces: List<Face>, image: InputImage) {
+        faceDetectionGraphicOverlay.setFace(faces)
+        faceDetectionGraphicOverlay.setTransformationInfo(image.width, image.height, image.rotationDegrees)
+    }
+
+    private fun setFaceMeshGraphicOverlay(faceMeshes: MutableList<FaceMesh>, image: InputImage) {
+        faceMeshGraphicOverlay.setFace(faceMeshes)
+        faceMeshGraphicOverlay.setTransformationInfo(image.width, image.height, image.rotationDegrees)
+    }
+
+    private fun setPoseGraphicOverlay(poses: Pose, image: InputImage) {
+        poseGraphicOverlay.setPoses(poses)
+        poseGraphicOverlay.setTransformationInfo(image.width, image.height, image.rotationDegrees)
+    }
+
     private fun setNoFaceMsg() {
         cameraPreviewActivity.setNoFaceTextView()
     }
-
-    /*private fun setFaceGraphicOverlay(faces: List<Face>, image: InputImage, rotation: Int) {
-        fgOverlay.setFace(faces)
-        fgOverlay.setRotation(rotation)
-        fgOverlay.setImageSize(image.width.toFloat(), image.height.toFloat())
-        fgOverlay.setPreviewSize(fgOverlay.width.toFloat(), fgOverlay.height.toFloat())
-    }*/
-
 
     private fun setEulerAnglesMsg(rotX: Float, rotY: Float, rotZ: Float) {
         cameraPreviewActivity.setEulerAnglesTextView(rotX, rotY, rotZ)
@@ -580,5 +594,4 @@ class FaceDetectionProcessor(
     companion object {
         private const val TAG = "FaceDetectionProcessor"
     }
-
 }
