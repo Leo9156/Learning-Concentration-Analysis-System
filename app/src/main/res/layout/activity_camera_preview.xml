@@ -19,7 +19,6 @@
 
     <TextView
         android:id="@+id/textViewEulerX"
-        style="@style/Widget.LearningAssistance.TextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
@@ -34,7 +33,6 @@
 
     <TextView
         android:id="@+id/textViewEulerY"
-        style="@style/Widget.LearningAssistance.TextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
@@ -48,7 +46,6 @@
 
     <TextView
         android:id="@+id/textViewEulerZ"
-        style="@style/Widget.LearningAssistance.TextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
@@ -62,7 +59,6 @@
 
     <TextView
         android:id="@+id/textViewRightEAR"
-        style="@style/Widget.LearningAssistance.TextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
@@ -76,7 +72,6 @@
 
     <TextView
         android:id="@+id/textViewLeftEAR"
-        style="@style/Widget.LearningAssistance.TextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
@@ -90,7 +85,6 @@
 
     <TextView
         android:id="@+id/textViewEAR"
-        style="@style/Widget.LearningAssistance.TextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
@@ -104,7 +98,6 @@
 
     <TextView
         android:id="@+id/textViewLatencyTime"
-        style="@style/Widget.LearningAssistance.TextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
@@ -118,7 +111,6 @@
 
     <TextView
         android:id="@+id/textViewNoFaceMsg"
-        style="@style/Widget.LearningAssistance.TextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
@@ -148,7 +140,6 @@
 
     <TextView
         android:id="@+id/textViewLearningTimer"
-        style="@style/Widget.LearningAssistance.TextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
@@ -208,7 +199,6 @@
 
     <TextView
         android:id="@+id/textViewBasicHeadPoseTimer"
-        style="@style/Widget.LearningAssistance.TextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"

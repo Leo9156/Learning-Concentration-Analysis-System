@@ -8,6 +8,7 @@
     android:keepScreenOn="true"
     tools:context=".MainActivity">
 
+    <!--
     <ImageView
         android:id="@+id/imageViewBackground"
         android:layout_width="match_parent"
@@ -19,47 +20,47 @@
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+-->
 
-
-    <TextView
+    <com.google.android.material.textview.MaterialTextView
         android:id="@+id/learningTime"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
         android:text="@string/_60_00"
-        android:textSize="54sp"
+        style="@style/TextAppearance.Material3.DisplayLarge"
         app:layout_constraintBottom_toTopOf="@+id/timePicker"
-        app:layout_constraintEnd_toEndOf="@id/guideline2"
-        app:layout_constraintStart_toStartOf="@id/guideline"
-        app:layout_constraintTop_toBottomOf="@+id/imageViewBackground"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.5" />
 
     <NumberPicker
         android:id="@+id/timePicker"
         android:layout_width="160dp"
         android:layout_height="104dp"
-        android:layout_marginTop="16dp"
         android:fadingEdge="vertical"
         android:theme="@style/NumberPickerTheme"
         app:layout_constraintBottom_toTopOf="@+id/buttonStart"
-        app:layout_constraintEnd_toEndOf="@id/guideline2"
-        app:layout_constraintStart_toStartOf="@id/guideline"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/learningTime"
         app:layout_constraintVertical_bias="0.5" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/buttonStart"
-        android:layout_width="106dp"
-        android:layout_height="51dp"
+        style="@style/ThemeOverlay.Material3.Button.ElevatedButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:text="@string/start"
-        android:textColor="@color/black"
-        app:backgroundTint="#EEEBEA"
         app:cornerRadius="50dp"
-        app:iconTint="#8F8F8F"
-        app:layout_constraintBottom_toTopOf="@+id/imageViewBackground"
-        app:layout_constraintEnd_toEndOf="@id/guideline2"
-        app:layout_constraintStart_toStartOf="@id/guideline"
+        app:icon="@drawable/ic_camera"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/timePicker"
         app:layout_constraintVertical_bias="0.5" />
 
