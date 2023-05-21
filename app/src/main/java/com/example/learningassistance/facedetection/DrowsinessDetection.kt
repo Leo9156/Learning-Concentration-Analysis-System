@@ -37,6 +37,74 @@ class DrowsinessDetection(private val context: Context) {
     private var isVibrating = false
     private val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
 
+    /*
+    try to code yawning detection in DrowsinessDetection.kt
+    by John
+    How?
+        be honest, I want to detection yawning by 3sec, not 30sec(because yawning time may not yawn to 30sec
+        declare variable:
+            detectionYawningPeriodMs : Long = 3000
+            OpenmouthThreshold = 0.2
+            yawningMOR
+            MouthOpenRatio
+            and some method
+            caculate as EAR
+    */
+    //declare variables
+    private var YawningThreshold = 0.2
+    private var DetectionYawningPeriodMs : Long = 5000
+    private var YawningDetectionDuration : Long = 0
+    private var startYawningTimerMs = System.currentTimeMillis()
+    private var endYawningTimerMs = System.currentTimeMillis()
+    private var Yawning = false
+    //mouth open ratio
+    private var yawningMOR = 0.0f
+    /*
+    and some method
+    setYawningThreshold
+    getYawningThreshold
+    getMOR
+     */
+    fun setYawningThreshold(threshold: Double) {
+        this.YawningThreshold = threshold
+    }
+    fun getYawningThreshold(): Double {
+        return this.YawningThreshold
+    }
+    fun calculateYawningDetectDuration() {
+        YawningDetectionDuration = endYawningTimerMs - startYawningTimerMs
+    }
+    fun startYawningTimer() {
+        this.startYawningTimerMs = System.currentTimeMillis()
+    }
+    fun endYawningTimer() {
+        this.endYawningTimerMs = System.currentTimeMillis()
+    }
+    fun getYawningDetectionDuration(): Long {
+        return this.YawningDetectionDuration
+    }
+    fun setDetectionYawningPeriodMs(period: Long) {
+        this.DetectionYawningPeriodMs = period
+    }
+    fun getDetectionYawningPeriodMs(): Long {
+        return this.DetectionYawningPeriodMs
+    }
+    // I'm not sure to use this.yawningMOR or yawningMOR
+    fun calculateMOR(allPoints: List<FaceMeshPoint>) {
+        var a = calculateDistance(allPoints[78].position, allPoints[308].position)
+        var b = calculateDistance(allPoints[38].position, allPoints[86].position)
+        var c = calculateDistance(allPoints[268].position, allPoints[316].position)
+        this.yawningMOR = (b+c)/(2*a)
+    }
+    fun getMOR(): Float {
+        return this.yawningMOR
+    }
+    fun resetMOR() {
+        this.yawningMOR = 0.0f
+    }
+    fun resetYawningDetect() {
+        startYawningTimer()
+    }
     fun setClosedEyeThreshold(threshold: Double) {
         this.closedEyeThreshold = threshold
     }

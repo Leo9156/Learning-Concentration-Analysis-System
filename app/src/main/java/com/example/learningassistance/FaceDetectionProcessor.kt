@@ -50,7 +50,8 @@ class FaceDetectionProcessor(
     //private val tvBasicHeadPoseTimer: TextView,
     private val tvHeadPoseAttentionAnalyzerTimer: TextView,
     private val btnRetryBasicHeadPoseMeasurement: MaterialButton
-): ImageAnalysis.Analyzer {
+): ImageAnalysis.Analyzer
+{
 
     // The rotation degree of pitch, yaw, and row
     private var rotX = 0f
@@ -113,6 +114,7 @@ class FaceDetectionProcessor(
                         setNoFaceMsg()  // Show the no face message to the user
                         noFaceDetector.setIsNoFace(true)  // Set no face flag to true
                         drowsinessDetector.resetEAR()   // Reset leftEyeEAR and rightEyeEAR
+                        drowsinessDetector.resetMOR()   // Reset MOR
                         restartBasicHeadPoseMeasurement()  // Restart basic head pose measuring if the user is measuring basic head pose
                     } else {
                         // Set no face flag to false
@@ -178,10 +180,13 @@ class FaceDetectionProcessor(
                         Log.v(TAG, "face mesh no face")
                         // Reset EAR
                         drowsinessDetector.resetEAR()
+                        // Reset MOR
+                        drowsinessDetector.resetMOR()
                     } else {
                         for (faceMesh in faceMeshes) {
                             drowsinessDetector.calculateEAR(faceMesh.allPoints)
 
+                            drowsinessDetector.calculateMOR(faceMesh.allPoints)
                             //Show the EAR of each eye on the textView
                             if (drowsinessDetector.getEAR() != 1.0f && !noFaceDetector.isNoFace()) {
                                 setRightEyeMsg(drowsinessDetector.getRightEAR())
@@ -301,11 +306,9 @@ class FaceDetectionProcessor(
 
         drowsinessDetector.endDrowinessTimer()
         drowsinessDetector.calculateDuration()
-
         if (drowsinessDetector.getEAR() < drowsinessDetector.getClosedEyeThreshold()) {
             drowsinessDetector.increaseClosedEyesFrameNumber()
         }
-
         // Show the timer
         cameraPreviewActivity.setDrowsinessTimerTextView(drowsinessDetector.getDuration() / 1000)
 
@@ -370,6 +373,57 @@ class FaceDetectionProcessor(
             // Reset the variables
             drowsinessDetector.resetDetector()
         }
+        //Yawning Detection
+        drowsinessDetector.endYawningTimer()
+        drowsinessDetector.calculateYawningDetectDuration()
+
+        if (drowsinessDetector.getMOR() >= drowsinessDetector.getYawningThreshold()) {
+            when {
+                drowsinessDetector.getYawningDetectionDuration() <= drowsinessDetector.getDetectionYawningPeriodMs() -> {
+                    if (drowsinessDetector.isFatigueDialogShowing()) {
+                        fatigueAlertDialog.dismiss()
+                        drowsinessDetector.setIsFatigueDialogShowing(false)
+                    }
+
+                    if (drowsinessDetector.isAlarmPlaying()) {
+                        drowsinessDetector.stopAlarm()
+                    }
+
+                    if (drowsinessDetector.isVibrating()) {
+                        drowsinessDetector.stopVibrating()
+                    }
+
+                    if (isAlertDialogShowing) {
+                        isAlertDialogShowing = false
+                    }
+
+                    Log.v(TAG, "awake")
+                }
+                else -> {
+                    if (!isAlertDialogShowing) {
+                        if (!drowsinessDetector.isAlarmPlaying()) {
+                            drowsinessDetector.playAlarm()
+                        }
+
+                        if (!drowsinessDetector.isVibrating()) {
+                            drowsinessDetector.startVibrating()
+                        }
+
+                        if (!drowsinessDetector.isFatigueDialogShowing()) {
+                            showFatigueAlertDialog(context)
+                        }
+
+                        isAlertDialogShowing = true
+                    }
+
+                    Log.v(TAG, "fatigue")
+                }
+            }
+        }
+        else {
+            drowsinessDetector.resetYawningDetect()
+        }
+
     }
 
     private fun restartBasicHeadPoseMeasurement() {
@@ -590,7 +644,10 @@ class FaceDetectionProcessor(
     private fun setEARMsg(ear: Float) {
         cameraPreviewActivity.setEARTextView(ear)
     }
-
+    //just a void fun, after building the setMORTextView, remove the '//' below
+    private fun setMORMsg(MOR: Float) {
+        //cameraPreviewActivity.setMORTextView(MOR)
+    }
     companion object {
         private const val TAG = "FaceDetectionProcessor"
     }
