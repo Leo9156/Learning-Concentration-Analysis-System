@@ -8,6 +8,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import com.example.learningassistance.R
 import com.google.android.material.snackbar.Snackbar
 
+// TODO: Design more accurate method to distinguish look around and look at other side for a period of time
 class HeadPoseAttentionAnalysis(
     private val context: Context,
     private val root: ConstraintLayout,
@@ -31,7 +32,7 @@ class HeadPoseAttentionAnalysis(
     private var startTimerMs = System.currentTimeMillis()
     private var endTimerMs = System.currentTimeMillis()
     private var perAttention = 0f
-    private var inattentionThreshold = 0.5f
+    private var inattentionThreshold = 0.3f
     private var totalFrame = 0
     private var inattentionFrame = 0
 
@@ -61,7 +62,7 @@ class HeadPoseAttentionAnalysis(
         this.xNegativeThreshold = angle
     }
 
-    fun setPositiveThreasholdY(angle: Float) {
+    fun setPositiveThresholdY(angle: Float) {
         this.yPositiveThreshold = angle
     }
 
@@ -92,9 +93,12 @@ class HeadPoseAttentionAnalysis(
             isAttention = totalAttentionFrame >= totalInattentionFrame
 
             totalFrame++
+
             if (!isAttention) {
                 inattentionFrame++
             }
+
+            Log.v("HeadPoseAttention", "isAttention $isAttention")
 
             totalAttentionFrame = 0
             totalInattentionFrame = 0

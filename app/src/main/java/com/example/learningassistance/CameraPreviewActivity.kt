@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.MediaPlayer
-//import android.os.Build.VERSION_CODES.R
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.CountDownTimer
@@ -25,6 +24,7 @@ import androidx.core.content.ContextCompat
 import com.example.learningassistance.graphicOverlay.FaceDetectionGraphicOverlay
 import com.example.learningassistance.graphicOverlay.FaceMeshGraphicOverlay
 import com.example.learningassistance.facedetection.BasicHeadPoseMeasurement
+import com.example.learningassistance.graphicOverlay.ObjectDetectionGraphicOverlay
 import com.example.learningassistance.graphicOverlay.PoseGraphicOverlay
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -40,6 +40,7 @@ class CameraPreviewActivity : AppCompatActivity() {
     private lateinit var faceDetectionGraphicOverlay: FaceDetectionGraphicOverlay
     private lateinit var faceMeshGraphicOverlay: FaceMeshGraphicOverlay
     private lateinit var poseGraphicOverlay: PoseGraphicOverlay
+    private lateinit var objectDetectionGraphicOverlay: ObjectDetectionGraphicOverlay
 
     // Messages
     private lateinit var textViewEulerX: TextView
@@ -55,9 +56,11 @@ class CameraPreviewActivity : AppCompatActivity() {
     private lateinit var textViewNoFaceTimer: TextView
     private lateinit var textViewHeadPoseAttentionAnalyzerTimer: TextView
     private lateinit var textViewBasicHeadPoseTimer: TextView
+    private lateinit var textViewObjectMsg: TextView
 
     private lateinit var btnRetryBasicHeadPoseMeasurement: MaterialButton
     private lateinit var faceDetectionProcessor: FaceDetectionProcessor
+    private lateinit var objectDetectionProcessor: ObjectDetectionProcessor
     private var basicHeadPoseTimer: CountDownTimer? = null
     private var learningTime: Int = 0
     private lateinit var cameraProvider: ProcessCameraProvider
@@ -74,6 +77,7 @@ class CameraPreviewActivity : AppCompatActivity() {
         faceDetectionGraphicOverlay = findViewById(R.id.faceDetectionGraphicOverlay)
         faceMeshGraphicOverlay = findViewById(R.id.faceMeshGraphicOverlay)
         poseGraphicOverlay = findViewById(R.id.poseGraphicOverlay)
+        objectDetectionGraphicOverlay = findViewById(R.id.objectDetectionGraphicOverlay)
 
         textViewEulerX = findViewById(R.id.textViewEulerX)
         textViewEulerY = findViewById(R.id.textViewEulerY)
@@ -88,6 +92,7 @@ class CameraPreviewActivity : AppCompatActivity() {
         textViewNoFaceTimer= findViewById(R.id.textViewNoFaceTimer)
         textViewHeadPoseAttentionAnalyzerTimer= findViewById(R.id.textViewHeadPoseAttentionAnalyzerTimer)
         textViewBasicHeadPoseTimer= findViewById(R.id.textViewBasicHeadPoseTimer)
+        textViewObjectMsg = findViewById(R.id.textViewObjectMsg)
 
         btnRetryBasicHeadPoseMeasurement = findViewById(R.id.buttonRetryBasicHeadPoseMeasurement)
 
@@ -98,18 +103,11 @@ class CameraPreviewActivity : AppCompatActivity() {
             poseGraphicOverlay,
             root,
             this,
-            //textViewEulerX,
-            //textViewEulerY,
-            //textViewEulerZ,
-            //textViewRightEAR,
-            //textViewLeftEAR,
-            //textViewEAR,
-            //textViewLatencyTime,
-            //textViewNoFaceMsg,
             textViewHeadPoseAttentionAnalyzerTimer,
-            //textViewBasicHeadPoseTimer,
             btnRetryBasicHeadPoseMeasurement
         )
+
+        objectDetectionProcessor = ObjectDetectionProcessor(this, objectDetectionGraphicOverlay, textViewObjectMsg, this)
 
         //textViewHeadPoseAttentionAnalyzerTimer.visibility = View.INVISIBLE
         //textViewDrowsinessTimer.visibility = View.INVISIBLE
@@ -160,19 +158,6 @@ class CameraPreviewActivity : AppCompatActivity() {
                             basicHeadPoseTimer!!.cancel()
                         }
                     }
-
-                        /*val snackBar: Snackbar = Snackbar.make(
-                            root,
-                            String.format(
-                                getString(R.string.basic_head_pose_counting_msg),
-                                (millisUntilFinished / 1000).toInt()
-                            ),
-                            Snackbar.LENGTH_INDEFINITE
-                        )
-                        snackBar.show()
-                    } else {
-                        snackBar.dismiss()
-                    }*/
                 }
 
                 override fun onFinish() {
@@ -186,9 +171,6 @@ class CameraPreviewActivity : AppCompatActivity() {
 
                         textViewBasicHeadPoseTimer.visibility = View.INVISIBLE
 
-                        //val notificationUri =
-                            //RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
-                        //mediaPlayer = MediaPlayer.create(context, notificationUri)
                         mediaPlayer = MediaPlayer.create(context, R.raw.basic_head_pose_complete)
                         mediaPlayer.setOnCompletionListener { mp ->
                             mp.release()
@@ -281,22 +263,29 @@ class CameraPreviewActivity : AppCompatActivity() {
                     it.setSurfaceProvider(viewFinder.surfaceProvider)
                 }
 
-            //Log.v(TAG, "resolution: ${targetSolution}")
-
-            val imageAnalysis = ImageAnalysis.Builder()
-                .setTargetResolution(targetSolution)
+            val imageAnalysisYUV = ImageAnalysis.Builder()
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .build()
 
-            imageAnalysis.setAnalyzer(
+            val imageAnalysisRGB = ImageAnalysis.Builder()
+                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
+                .build()
+
+            imageAnalysisYUV.setAnalyzer(
                 cameraExecutor,
                 faceDetectionProcessor
+            )
+
+            imageAnalysisRGB.setAnalyzer(
+                cameraExecutor,
+                objectDetectionProcessor
             )
 
             try {
                 cameraProvider.unbindAll()
 
-                cameraProvider.bindToLifecycle(this, cameraSelector, imageAnalysis, preview)
+                cameraProvider.bindToLifecycle(this, cameraSelector, imageAnalysisYUV, imageAnalysisRGB, preview)
             } catch (exc: Exception) {
                 Log.e(TAG, "Use case binding failed")
             }
@@ -383,6 +372,18 @@ class CameraPreviewActivity : AppCompatActivity() {
 
     fun resetBasicHeadPoseTimerTextView() {
         textViewBasicHeadPoseTimer.text = ""
+    }
+
+    fun setObjectDetectionMessageTextView(msg: String) {
+        runOnUiThread {
+            textViewObjectMsg.text = msg
+        }
+    }
+
+    fun resetObjectDetectionMessageTextView() {
+        runOnUiThread {
+            textViewObjectMsg.text = "object detection: "
+        }
     }
 
     companion object {

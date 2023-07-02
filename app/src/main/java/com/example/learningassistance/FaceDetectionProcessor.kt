@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.media.MediaPlayer
 import android.os.CountDownTimer
+import android.os.SystemClock
 import android.util.Log
 import android.view.View
 import android.widget.TextView
@@ -19,6 +20,7 @@ import com.example.learningassistance.graphicOverlay.PoseGraphicOverlay
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
+import com.google.mlkit.common.model.LocalModel
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.Face
 import com.google.mlkit.vision.face.FaceDetection
@@ -26,6 +28,7 @@ import com.google.mlkit.vision.face.FaceDetectorOptions
 import com.google.mlkit.vision.facemesh.FaceMesh
 import com.google.mlkit.vision.facemesh.FaceMeshDetection
 import com.google.mlkit.vision.facemesh.FaceMeshDetectorOptions
+import com.google.mlkit.vision.interfaces.Detector
 import com.google.mlkit.vision.pose.Pose
 import com.google.mlkit.vision.pose.PoseDetection
 import com.google.mlkit.vision.pose.accurate.AccuratePoseDetectorOptions
@@ -36,18 +39,7 @@ class FaceDetectionProcessor(
     private val faceMeshGraphicOverlay: FaceMeshGraphicOverlay,
     private val poseGraphicOverlay: PoseGraphicOverlay,
     private val root: ConstraintLayout,
-    //private val tvEulerX: TextView,
-    //private val tvEulerY: TextView,
-    //private val tvEulerZ: TextView,
-    //private val tvRightEAR: TextView,
-    //private val tvLeftEAR: TextView,
-    //private val tvEAR: TextView,
-    //private val tvLatencyTime: TextView,
-    //private val tvNoFaceMsg: TextView,
-    //private val tvDrowsinessTimer: TextView,
-    //private val tvNoFaceTimer: TextView,
     private val cameraPreviewActivity: CameraPreviewActivity,
-    //private val tvBasicHeadPoseTimer: TextView,
     private val tvHeadPoseAttentionAnalyzerTimer: TextView,
     private val btnRetryBasicHeadPoseMeasurement: MaterialButton
 ): ImageAnalysis.Analyzer {
@@ -75,7 +67,7 @@ class FaceDetectionProcessor(
 
     // Create the face detector of ML kit
     private val faceDetectionOptions = FaceDetectorOptions.Builder()
-        .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_FAST)
+        .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
         //.setContourMode(FaceDetectorOptions.CONTOUR_MODE_NONE)
         .setClassificationMode(FaceDetectorOptions.CLASSIFICATION_MODE_ALL)
         .build()
@@ -93,6 +85,11 @@ class FaceDetectionProcessor(
         .setDetectorMode(AccuratePoseDetectorOptions.STREAM_MODE)
         .build()
     private val poseDetector = PoseDetection.getClient(poseDetectOptions)
+
+    // Create the object detector
+    private val localModel = LocalModel.Builder()  // Get the model path
+        .setAssetFilePath("model_int8_qat.tflite")
+        .build()
 
     @SuppressLint("UnsafeOptInUsageError")
     override fun analyze(imageProxy: ImageProxy) {
@@ -164,9 +161,10 @@ class FaceDetectionProcessor(
                 }
                 .addOnFailureListener { e ->
                     // TODO: Add alert dialog
-                    Log.w(TAG, "Face detector failed. $e")
+                    Log.e(TAG, "Face detector failed. $e")
                 }
                 .addOnCompleteListener {
+                    mediaImage.close()
                     imageProxy.close()
                 }
 
@@ -202,10 +200,11 @@ class FaceDetectionProcessor(
                 Log.w(TAG, "Face mesh detector failed. $e")
                 }
                 .addOnCompleteListener {
+                    mediaImage.close()
                     imageProxy.close()
                 }
 
-            val poseDetectionResult = poseDetector.process(image)
+            /*val poseDetectionResult = poseDetector.process(image)
                 .addOnSuccessListener { poses ->
                     setPoseGraphicOverlay(poses, image)
                 }
@@ -214,11 +213,13 @@ class FaceDetectionProcessor(
                 }
                 .addOnCompleteListener {
                     imageProxy.close()
-                }
+                }*/
 
             // Calculate the processing time
             val detectionEndTimeMs = System.currentTimeMillis()
             processTime(detectionStartTimeMs, detectionEndTimeMs)
+
+            mediaImage.close()
         }
 
     }
@@ -613,6 +614,7 @@ class FaceDetectionProcessor(
 
     private fun setFaceDetectionGraphicOverlay(faces: List<Face>, image: InputImage) {
         faceDetectionGraphicOverlay.setFace(faces)
+        Log.v(TAG, "rotate: ${image.rotationDegrees}")
         faceDetectionGraphicOverlay.setTransformationInfo(image.width, image.height, image.rotationDegrees)
     }
 
