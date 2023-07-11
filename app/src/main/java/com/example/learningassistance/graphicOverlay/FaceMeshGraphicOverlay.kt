@@ -43,7 +43,8 @@ class FaceMeshGraphicOverlay(
         } else {
             this.faces = faceMeshes
         }
-        invalidate()  // Will call onDraw again
+        //invalidate()  // Will call onDraw again
+        postInvalidate()
     }
 
     fun setTransformationInfo(imageWidth: Int, imageHeight: Int, rotation: Int) {

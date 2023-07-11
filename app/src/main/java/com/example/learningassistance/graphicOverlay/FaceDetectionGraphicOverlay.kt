@@ -33,7 +33,8 @@ class FaceDetectionGraphicOverlay(
         } else {
             this.faces = faces
         }
-        invalidate()
+        //invalidate()
+        postInvalidate()
     }
 
     fun setTransformationInfo(imageWidth: Int, imageHeight: Int, rotation: Int) {
