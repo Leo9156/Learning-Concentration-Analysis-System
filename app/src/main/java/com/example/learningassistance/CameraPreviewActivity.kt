@@ -11,56 +11,29 @@ import android.os.CountDownTimer
 import android.util.Log
 import android.util.Size
 import android.view.View
-import android.widget.TextView
 import android.widget.Toast
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.camera.view.PreviewView
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.example.learningassistance.graphicOverlay.FaceDetectionGraphicOverlay
-import com.example.learningassistance.graphicOverlay.FaceMeshGraphicOverlay
+import com.example.learningassistance.databinding.ActivityCameraPreviewBinding
 import com.example.learningassistance.facedetection.BasicHeadPoseMeasurement
-import com.example.learningassistance.graphicOverlay.ObjectDetectionGraphicOverlay
-import com.example.learningassistance.graphicOverlay.PoseGraphicOverlay
-import com.google.android.material.button.MaterialButton
+import com.example.learningassistance.facedetection.FaceDetectionProcessor
+import com.example.learningassistance.objectdetection.ObjectDetectionProcessor
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import java.util.concurrent.Executors
 
 class CameraPreviewActivity : AppCompatActivity() {
 
-    private lateinit var root: ConstraintLayout
-    private lateinit var viewFinder: PreviewView
+    private lateinit var binding: ActivityCameraPreviewBinding
 
-    // Graphic overlay
-    private lateinit var faceDetectionGraphicOverlay: FaceDetectionGraphicOverlay
-    private lateinit var faceMeshGraphicOverlay: FaceMeshGraphicOverlay
-    private lateinit var poseGraphicOverlay: PoseGraphicOverlay
-    private lateinit var objectDetectionGraphicOverlay: ObjectDetectionGraphicOverlay
-
-    // Messages
-    private lateinit var textViewEulerX: TextView
-    private lateinit var textViewEulerY: TextView
-    private lateinit var textViewEulerZ: TextView
-    private lateinit var textViewRightEAR: TextView
-    private lateinit var textViewLeftEAR: TextView
-    private lateinit var textViewEAR: TextView
-    private lateinit var textViewLatencyTime: TextView
-    private lateinit var textViewLearningTimer: TextView
-    private lateinit var textViewNoFaceMsg: TextView
-    private lateinit var textViewDrowsinessTimer: TextView
-    private lateinit var textViewNoFaceTimer: TextView
-    private lateinit var textViewHeadPoseAttentionAnalyzerTimer: TextView
-    private lateinit var textViewBasicHeadPoseTimer: TextView
-    private lateinit var textViewObjectMsg: TextView
-
-    private lateinit var btnRetryBasicHeadPoseMeasurement: MaterialButton
+    // Processors
     private lateinit var faceDetectionProcessor: FaceDetectionProcessor
     private lateinit var objectDetectionProcessor: ObjectDetectionProcessor
+
     private var basicHeadPoseTimer: CountDownTimer? = null
     private var learningTime: Int = 0
     private lateinit var cameraProvider: ProcessCameraProvider
@@ -69,53 +42,30 @@ class CameraPreviewActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_camera_preview)
-
-        root = findViewById(R.id.root)
-        viewFinder = findViewById(R.id.viewFinder)
-
-        faceDetectionGraphicOverlay = findViewById(R.id.faceDetectionGraphicOverlay)
-        faceMeshGraphicOverlay = findViewById(R.id.faceMeshGraphicOverlay)
-        poseGraphicOverlay = findViewById(R.id.poseGraphicOverlay)
-        objectDetectionGraphicOverlay = findViewById(R.id.objectDetectionGraphicOverlay)
-
-        textViewEulerX = findViewById(R.id.textViewEulerX)
-        textViewEulerY = findViewById(R.id.textViewEulerY)
-        textViewEulerZ = findViewById(R.id.textViewEulerZ)
-        textViewRightEAR = findViewById(R.id.textViewRightEAR)
-        textViewLeftEAR = findViewById(R.id.textViewLeftEAR)
-        textViewEAR = findViewById(R.id.textViewEAR)
-        textViewLatencyTime = findViewById(R.id.textViewLatencyTime)
-        textViewLearningTimer = findViewById(R.id.textViewLearningTimer)
-        textViewNoFaceMsg = findViewById(R.id.textViewNoFaceMsg)
-        textViewDrowsinessTimer = findViewById(R.id.textViewDrowsinessTimer)
-        textViewNoFaceTimer= findViewById(R.id.textViewNoFaceTimer)
-        textViewHeadPoseAttentionAnalyzerTimer= findViewById(R.id.textViewHeadPoseAttentionAnalyzerTimer)
-        textViewBasicHeadPoseTimer= findViewById(R.id.textViewBasicHeadPoseTimer)
-        textViewObjectMsg = findViewById(R.id.textViewObjectMsg)
-
-        btnRetryBasicHeadPoseMeasurement = findViewById(R.id.buttonRetryBasicHeadPoseMeasurement)
+        binding = ActivityCameraPreviewBinding.inflate(layoutInflater)
+        val view = binding.root
+        setContentView(view)
 
         faceDetectionProcessor = FaceDetectionProcessor(
             this,
-            faceDetectionGraphicOverlay,
-            faceMeshGraphicOverlay,
-            poseGraphicOverlay,
-            root,
+            binding.faceDetectionGraphicOverlay,
+            binding.faceMeshGraphicOverlay,
+            binding.poseGraphicOverlay,
+            binding.root,
             this,
-            textViewHeadPoseAttentionAnalyzerTimer,
-            btnRetryBasicHeadPoseMeasurement
+            binding.textViewHeadPoseAttentionAnalyzerTimer,
+            binding.buttonRetryBasicHeadPoseMeasurement
         )
 
-        objectDetectionProcessor = ObjectDetectionProcessor(this, objectDetectionGraphicOverlay, textViewObjectMsg, this)
-
-        //textViewHeadPoseAttentionAnalyzerTimer.visibility = View.INVISIBLE
-        //textViewDrowsinessTimer.visibility = View.INVISIBLE
-        //textViewNoFaceTimer.visibility = View.INVISIBLE
+        objectDetectionProcessor = ObjectDetectionProcessor(
+            this,
+            binding.objectDetectionGraphicOverlay,
+            binding.textViewObjectMsg,
+            this)
 
         // Hide the btnRetryBasicHeadPoseMeasurement when the basic head pose is detecting
         if (BasicHeadPoseMeasurement.isBasicHeadPoseDetecting()) {
-            btnRetryBasicHeadPoseMeasurement.visibility = View.INVISIBLE
+            binding.buttonRetryBasicHeadPoseMeasurement.visibility = View.INVISIBLE
         }
 
         // Get the info from the MainActivity
@@ -144,15 +94,15 @@ class CameraPreviewActivity : AppCompatActivity() {
     }
 
     private fun showBasicHeadPoseMeasurementSnackBar(context: Context) {
-        val snackBar = Snackbar.make(root, R.string.basic_head_pose_msg, Snackbar.LENGTH_INDEFINITE)
+        val snackBar = Snackbar.make(binding.root, R.string.basic_head_pose_msg, Snackbar.LENGTH_INDEFINITE)
         snackBar.setAction(R.string.start) {
             BasicHeadPoseMeasurement.setIsBasicHeadPoseMeasurementStarting(true)
 
             basicHeadPoseTimer = object : CountDownTimer(5000, 1000) {
                 override fun onTick(millisUntilFinished: Long) {
                     if (!BasicHeadPoseMeasurement.hasToRestart()) {
-                        textViewBasicHeadPoseTimer.visibility = View.VISIBLE
-                        textViewBasicHeadPoseTimer.text = String.format(context.getString(R.string.basic_head_pose_counting_msg), (millisUntilFinished / 1000))
+                        binding.textViewBasicHeadPoseTimer.visibility = View.VISIBLE
+                        binding.textViewBasicHeadPoseTimer.text = String.format(context.getString(R.string.basic_head_pose_counting_msg), (millisUntilFinished / 1000))
                     } else {
                         if (basicHeadPoseTimer != null) {
                             basicHeadPoseTimer!!.cancel()
@@ -163,13 +113,13 @@ class CameraPreviewActivity : AppCompatActivity() {
                 override fun onFinish() {
                     if (!BasicHeadPoseMeasurement.hasToRestart()) {
                         Snackbar.make(
-                            root,
+                            binding.root,
                             R.string.basic_head_pose_complete_msg,
                             Snackbar.LENGTH_SHORT
                         )
                             .show()
 
-                        textViewBasicHeadPoseTimer.visibility = View.INVISIBLE
+                        binding.textViewBasicHeadPoseTimer.visibility = View.INVISIBLE
 
                         mediaPlayer = MediaPlayer.create(context, R.raw.basic_head_pose_complete)
                         mediaPlayer.setOnCompletionListener { mp ->
@@ -192,7 +142,7 @@ class CameraPreviewActivity : AppCompatActivity() {
                 val minute = secondsUntilFinished / 60
                 val second = secondsUntilFinished - (minute * 60)
 
-                textViewLearningTimer.text = String.format(getString(R.string.learning_count_down_timer), minute, second)
+                binding.textViewLearningTimer.text = String.format(getString(R.string.learning_count_down_timer), minute, second)
             }
 
             override fun onFinish() {
@@ -260,7 +210,7 @@ class CameraPreviewActivity : AppCompatActivity() {
                 .setTargetResolution(targetSolution)
                 .build()
                 .also {
-                    it.setSurfaceProvider(viewFinder.surfaceProvider)
+                    it.setSurfaceProvider(binding.viewFinder.surfaceProvider)
                 }
 
             val imageAnalysisYUV = ImageAnalysis.Builder()
@@ -299,90 +249,82 @@ class CameraPreviewActivity : AppCompatActivity() {
 
     fun setLatencyTextView(msg: String) {
         runOnUiThread {
-            textViewLatencyTime.text = msg
+            binding.textViewLatencyTime.text = msg
         }
     }
 
     fun setNoFaceTextView() {
-        textViewEulerX.text = ""
-        textViewEulerY.text = ""
-        textViewEulerZ.text = ""
-        textViewRightEAR.text = ""
-        textViewLeftEAR.text = ""
-        textViewLatencyTime.text = ""
-        textViewEAR.text = ""
-        textViewNoFaceMsg.text = getString(R.string.no_face_detected_info)
+        binding.textViewEulerX.text = ""
+        binding.textViewEulerY.text = ""
+        binding.textViewEulerZ.text = ""
+        binding.textViewRightEAR.text = ""
+        binding.textViewLeftEAR.text = ""
+        binding.textViewLatencyTime.text = ""
+        binding.textViewEAR.text = ""
+        binding.textViewNoFaceMsg.text = getString(R.string.no_face_detected_info)
     }
-
-    /*private fun setFaceGraphicOverlay(faces: List<Face>, image: InputImage, rotation: Int) {
-        fgOverlay.setFace(faces)
-        fgOverlay.setRotation(rotation)
-        fgOverlay.setImageSize(image.width.toFloat(), image.height.toFloat())
-        fgOverlay.setPreviewSize(fgOverlay.width.toFloat(), fgOverlay.height.toFloat())
-    }*/
-
 
     fun setEulerAnglesTextView(rotX: Float, rotY: Float, rotZ: Float) {
         val eulerXMsg = String.format(getString(R.string.eulerx), rotX)
         val eulerYMsg = String.format(getString(R.string.eulery), rotY)
         val eulerZMsg = String.format(getString(R.string.eulerz), rotZ)
-        textViewEulerX.text = eulerXMsg
-        textViewEulerY.text = eulerYMsg
-        textViewEulerZ.text = eulerZMsg
+        binding.textViewEulerX.text = eulerXMsg
+        binding.textViewEulerY.text = eulerYMsg
+        binding.textViewEulerZ.text = eulerZMsg
     }
 
     fun setLeftEyeTextView(leftEAR: Float) {
-        textViewLeftEAR.text = String.format(getString(R.string.left_eye_open), leftEAR)
+        binding.textViewLeftEAR.text = String.format(getString(R.string.left_eye_open), leftEAR)
     }
 
     fun setRightEyeTextView(rightEAR: Float) {
-        textViewRightEAR.text = String.format(getString(R.string.right_eye_open), rightEAR)
+        binding.textViewRightEAR.text = String.format(getString(R.string.right_eye_open), rightEAR)
     }
 
     fun setEARTextView(ear: Float) {
-        textViewEAR.text = String.format(getString(R.string.ear), ear)
+        binding.textViewEAR.text = String.format(getString(R.string.ear), ear)
     }
 
     fun resetNoFaceTextView() {
-        textViewNoFaceMsg.text = ""
+        binding.textViewNoFaceMsg.text = ""
     }
 
     fun setDrowsinessTimerTextView(time: Long) {
         runOnUiThread {
-            textViewDrowsinessTimer.text = getString(R.string.drowsiness_timer, time)
+            binding.textViewDrowsinessTimer.text = getString(R.string.drowsiness_timer, time)
 
         }
     }
 
     fun setNoFaceTimerTextView(time: Long) {
         runOnUiThread {
-            textViewNoFaceTimer.text = getString(R.string.no_face_timer, time)
+            binding.textViewNoFaceTimer.text = getString(R.string.no_face_timer, time)
         }
     }
 
     fun setBasicHeadPoseTimerTexView(time: Long) {
-        textViewBasicHeadPoseTimer.text = String.format(getString(R.string.basic_head_pose_counting_msg), time)
+        binding.textViewBasicHeadPoseTimer.text = String.format(getString(R.string.basic_head_pose_counting_msg), time)
     }
 
     fun setBasicHeadPoseTimerTextViewVisibility(flag: Boolean) = if (flag) {
-        textViewBasicHeadPoseTimer.visibility = View.VISIBLE
+        binding.textViewBasicHeadPoseTimer.visibility = View.VISIBLE
     } else {
-        textViewBasicHeadPoseTimer.visibility = View.INVISIBLE
+        binding.textViewBasicHeadPoseTimer.visibility = View.INVISIBLE
     }
 
     fun resetBasicHeadPoseTimerTextView() {
-        textViewBasicHeadPoseTimer.text = ""
+        binding.textViewBasicHeadPoseTimer.text = ""
     }
 
     fun setObjectDetectionMessageTextView(msg: String) {
         runOnUiThread {
-            textViewObjectMsg.text = msg
+            binding.textViewObjectMsg.text = msg
         }
     }
 
     fun resetObjectDetectionMessageTextView() {
         runOnUiThread {
-            textViewObjectMsg.text = "object detection: "
+            binding.textViewObjectMsg.text = "object detection: "
         }
     }
 

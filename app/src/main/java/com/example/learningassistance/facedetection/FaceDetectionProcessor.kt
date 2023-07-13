@@ -1,10 +1,9 @@
-package com.example.learningassistance
+package com.example.learningassistance.facedetection
 
 import android.annotation.SuppressLint
 import android.content.Context
 import android.media.MediaPlayer
 import android.os.CountDownTimer
-import android.os.SystemClock
 import android.util.Log
 import android.view.View
 import android.widget.TextView
@@ -13,6 +12,8 @@ import androidx.appcompat.app.AlertDialog
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
 import androidx.constraintlayout.widget.ConstraintLayout
+import com.example.learningassistance.CameraPreviewActivity
+import com.example.learningassistance.R
 import com.example.learningassistance.graphicOverlay.FaceDetectionGraphicOverlay
 import com.example.learningassistance.graphicOverlay.FaceMeshGraphicOverlay
 import com.example.learningassistance.facedetection.*
@@ -28,7 +29,6 @@ import com.google.mlkit.vision.face.FaceDetectorOptions
 import com.google.mlkit.vision.facemesh.FaceMesh
 import com.google.mlkit.vision.facemesh.FaceMeshDetection
 import com.google.mlkit.vision.facemesh.FaceMeshDetectorOptions
-import com.google.mlkit.vision.interfaces.Detector
 import com.google.mlkit.vision.pose.Pose
 import com.google.mlkit.vision.pose.PoseDetection
 import com.google.mlkit.vision.pose.accurate.AccuratePoseDetectorOptions
@@ -475,7 +475,7 @@ class FaceDetectionProcessor(
 
                 dialog.dismiss()
             }
-            .setNegativeButton(R.string.cancel) {dialog, _ ->
+            .setNegativeButton(R.string.cancel) { dialog, _ ->
                 BasicHeadPoseMeasurement.setIsBasicHeadPoseDetecting(false)
                 dialog.dismiss()
             }
@@ -521,7 +521,9 @@ class FaceDetectionProcessor(
 
                             //val notificationUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
                             //mediaPlayer = MediaPlayer.create(context, notificationUri)
-                            mediaPlayer = MediaPlayer.create(context, R.raw.basic_head_pose_complete)
+                            mediaPlayer = MediaPlayer.create(context,
+                                R.raw.basic_head_pose_complete
+                            )
                             mediaPlayer.setOnCompletionListener { mp ->
                                 mp.release()
                             }

@@ -1,24 +1,16 @@
 package com.example.learningassistance
 
 import android.animation.ObjectAnimator
-import android.content.Context
-import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Half.toFloat
 import android.view.View
 import android.view.ViewTreeObserver
-import android.view.animation.AnticipateInterpolator
 import android.view.animation.DecelerateInterpolator
-import android.widget.Button
-import android.widget.NumberPicker
-import android.widget.TextView
 import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class MainActivity : AppCompatActivity() {
 

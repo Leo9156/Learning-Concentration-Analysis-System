@@ -1,4 +1,4 @@
-package com.example.learningassistance
+package com.example.learningassistance.objectdetection
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -9,10 +9,10 @@ import android.widget.TextView
 import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
+import com.example.learningassistance.CameraPreviewActivity
 import com.example.learningassistance.graphicOverlay.ObjectDetectionGraphicOverlay
 import com.google.mediapipe.framework.image.BitmapImageBuilder
 import com.google.mediapipe.framework.image.MPImage
-import com.google.mediapipe.framework.image.MediaImageBuilder
 import com.google.mediapipe.tasks.core.BaseOptions
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.google.mediapipe.tasks.vision.objectdetector.ObjectDetector
