@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".homepage.NewTaskSheet">
+
+    <com.google.android.material.bottomsheet.BottomSheetDragHandleView
+        android:id="@+id/drag_handle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/task_msg"
+        style="@style/TextAppearance.Material3.TitleMedium"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="48dp"
+        android:textSize="18sp"
+        android:text="@string/new_learning_task"
+        android:textAppearance="@style/TextAppearance.AppCompat.Title"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/task_title_edit_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="52dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="40dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/task_msg">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/task_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/title" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <ImageView
+        android:id="@+id/icon_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="20dp"
+        android:src="@drawable/ic_title"
+        app:layout_constraintEnd_toStartOf="@+id/task_title_edit_layout"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/task_title_edit_layout" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/task_description_edit_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="52dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="40dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/task_title_edit_layout">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/task_discription"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:hint="@string/description"
+            android:inputType="textMultiLine" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <TextView
+        android:id="@+id/task_select_msg"
+        style="@style/TextAppearance.Material3.TitleMedium"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="18sp"
+        android:layout_marginTop="24dp"
+        android:text="@string/select_task_duration"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/task_description_edit_layout" />
+
+    <ImageView
+        android:id="@+id/icon_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="128dp"
+        android:src="@drawable/ic_clock"
+        app:layout_constraintEnd_toEndOf="@+id/icon_title"
+        app:layout_constraintStart_toStartOf="@+id/icon_title"
+        app:layout_constraintTop_toBottomOf="@+id/task_select_msg" />
+
+    <NumberPicker
+        android:id="@+id/task_time_minutes"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="48dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/task_time_hours"
+        app:layout_constraintTop_toBottomOf="@+id/task_select_msg" />
+
+    <NumberPicker
+        android:id="@+id/task_time_hours"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="48dp"
+        app:layout_constraintEnd_toStartOf="@+id/task_time_minutes"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintHorizontal_chainStyle="spread"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/task_select_msg" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:text=":"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toBottomOf="@+id/task_time_hours"
+        app:layout_constraintEnd_toStartOf="@+id/task_time_minutes"
+        app:layout_constraintStart_toEndOf="@+id/task_time_hours"
+        app:layout_constraintTop_toBottomOf="@+id/task_select_msg" />
+
+    <com.google.android.material.chip.Chip
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:clickable="false"
+        android:text="@string/hour"
+        app:chipStrokeColor="@android:color/transparent"
+        app:layout_constraintBottom_toTopOf="@+id/task_time_hours"
+        app:layout_constraintEnd_toEndOf="@+id/task_time_hours"
+        app:layout_constraintStart_toStartOf="@+id/task_time_hours"
+        app:layout_constraintTop_toBottomOf="@+id/task_select_msg" />
+
+    <com.google.android.material.chip.Chip
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:text="@string/minute"
+        app:chipStrokeColor="@android:color/transparent"
+
+        app:layout_constraintBottom_toTopOf="@+id/task_time_minutes"
+        app:layout_constraintEnd_toEndOf="@+id/task_time_minutes"
+        app:layout_constraintStart_toStartOf="@+id/task_time_minutes"
+        app:layout_constraintTop_toBottomOf="@+id/task_select_msg"
+        android:clickable="false"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/task_submit_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="24dp"
+        android:layout_marginBottom="16dp"
+        android:text="@string/submit"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/task_time_hours" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

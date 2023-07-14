@@ -25,16 +25,9 @@ class HomeFragment : Fragment() {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         val view = binding.root
 
-        // Setting of time picker
-        binding.timePicker.maxValue = 120
-        binding.timePicker.minValue = 1
-        binding.timePicker.value = 60
-        binding.timePicker.setOnValueChangedListener { _, _, newVal ->
-            binding.learningTime.text = String.format(getString(R.string.main_activity_timer), newVal)
-        }
-
-        binding.buttonStart.setOnClickListener {
-            showHeadPoseAlertDialog(activity as AppCompatActivity, binding.timePicker.value)
+        // Call the task bottom sheet
+        binding.addTaskButton.setOnClickListener {
+            NewTaskSheet().show(requireActivity().supportFragmentManager, NewTaskSheet.TAG)
         }
 
         return view
@@ -45,30 +38,8 @@ class HomeFragment : Fragment() {
         _binding = null
     }
 
-    private fun showHeadPoseAlertDialog(activity: AppCompatActivity, learningTime: Int) {
-        MaterialAlertDialogBuilder(activity)
-            .setTitle("NOTICE")
-            .setIcon(R.drawable.ic_notification)
-            .setMessage(getString(R.string.start_detection_notification_msg))
-            .setPositiveButton(getString(R.string.understand)) { dialog, _ ->
-                val intent = Intent(activity, CameraPreviewActivity::class.java)
-
-                val bundle = Bundle()
-                bundle.putInt("LEARNING_TIME", learningTime)
-                intent.putExtras(bundle)
-
-                startActivity(intent)
-
-                dialog.dismiss()
-            }
-            .setNegativeButton(R.string.cancel) { dialog, _ ->
-                dialog.dismiss()
-            }
-            .show()
-    }
-
     companion object {
-        private const val TAG = "HomeFragment"
+        const val TAG = "HomeFragment"
     }
 
 }

@@ -43,5 +43,13 @@
     <string name="home">Home</string>
     <string name="history">History</string>
     <string name="schedule">Schedule</string>
+    <string name="add_a_learning_task">Add a learning task</string>
+    <string name="new_learning_task">Item</string>
+    <string name="title">Title</string>
+    <string name="description">Description</string>
+    <string name="hour">hour</string>
+    <string name="minute">minute</string>
+    <string name="select_task_duration">Duration</string>
+    <string name="submit">Submit</string>
 
 </resources>
