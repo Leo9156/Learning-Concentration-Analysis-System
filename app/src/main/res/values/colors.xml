@@ -10,7 +10,7 @@
     <color name="blue_200">#FF90CAF9</color>
     <color name="blue_500">#FF2196F3</color>
     <color name="blue_700">#FF1976D2</color>
-    <color name="lime_green">#00FF00</color>
+    <color name="lime_green">#10CC45</color>
     <color name="orange">#FFA500</color>
     <color name="red">#FF0000</color>
     <color name="tangerine">#FFCC00</color>
@@ -77,4 +77,5 @@
     <color name="md_theme_dark_onSurface">#C6C6CA</color>
     <color name="md_theme_dark_surfaceVariant">#43474E</color>
     <color name="md_theme_dark_onSurfaceVariant">#C3C6CF</color>
+    <color name="edit_pen_color">#FFC107</color>
 </resources>

@@ -21,7 +21,7 @@
     <string name="basic_head_pose_counting_msg">Measuring\.\.\. %1$d</string>
     <string name="close">Close</string>
     <string name="cancel">Cancel</string>
-    <string name="start">START</string>
+    <string name="start">start</string>
     <string name="main_activity_welcome_msg">Welcome to Your Learning Space</string>
     <string name="start_detection">START DETECTION</string>
     <string name="start_detection_notification_msg">Before clicking the got it button, please place your phone in the appropriate position. After starting the detection, please maintain your standard learning pose for five seconds and do not move the device. The system will use your standard posture as a reference for further analysis.</string>
@@ -51,5 +51,16 @@
     <string name="minute">minute</string>
     <string name="select_task_duration">Duration</string>
     <string name="submit">Submit</string>
+    <string name="welcome">Welcome</string>
+    <string name="today">Today</string>
+    <string name="home_page_task_summary_msg">%d Tasks</string>
+    <string name="to_do_today">To do today</string>
+    <string name="in_progress">In progress</string>
+    <string name="total">Total</string>
+    <string name="percent">"%d%%</string>
+    <string name="task_duration">%d minutes</string>
+    <string name="delete_task">Delete this task?</string>
+    <string name="delete_task_detail">Are you sure you want to delete this task?</string>
+    <string name="delete">Delete</string>
 
 </resources>

@@ -42,6 +42,8 @@
             android:id="@+id/task_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:inputType="text"
+            android:maxLines="1"
             android:hint="@string/title" />
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -73,6 +75,8 @@
             android:layout_width="match_parent"
             android:layout_height="100dp"
             android:hint="@string/description"
+            android:scrollbars="vertical"
+            android:imeOptions="actionDone"
             android:inputType="textMultiLine" />
     </com.google.android.material.textfield.TextInputLayout>
 

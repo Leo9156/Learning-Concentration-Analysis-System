@@ -7,8 +7,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import com.example.learningassistance.CameraPreviewActivity
 import com.example.learningassistance.R
+import com.example.learningassistance.database.TaskDao
+import com.example.learningassistance.database.TaskDatabase
 import com.example.learningassistance.databinding.FragmentHomeBinding
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
@@ -27,8 +31,47 @@ class HomeFragment : Fragment() {
 
         // Call the task bottom sheet
         binding.addTaskButton.setOnClickListener {
-            NewTaskSheet().show(requireActivity().supportFragmentManager, NewTaskSheet.TAG)
+            NewTaskSheet(null).show(requireActivity().supportFragmentManager, NewTaskSheet.TAG)
         }
+
+        // Initialize the dao interface of the task database
+        val application = requireActivity().application
+        val dao = TaskDatabase.getInstance(application).taskDao
+
+        // Initialize the view model
+        val taskViewModelFactory = TaskViewModelFactory(dao)
+        val taskViewModel = ViewModelProvider(
+            requireActivity(),
+            taskViewModelFactory
+        ).get(TaskViewModel::class.java)
+
+        // Initialize the adapter and set the it to the recycler view
+        val adapter = TaskItemAdapter(
+            taskViewModel,
+            { task -> NewTaskSheet(task).show(requireActivity().supportFragmentManager, NewTaskSheet.TAG) },
+            { task ->
+                val intent = Intent(requireContext(), CameraPreviewActivity::class.java)
+                val bundle = Bundle()
+                bundle.putInt("LEARNING_TIME", task.taskDurationMin)
+                intent.putExtras(bundle)
+                startActivity(intent)
+        })
+        binding.taskRecyclerView.adapter = adapter
+
+        // Listen to the task in the database. If changed, than modify the recycler view
+        taskViewModel.tasks.observe(viewLifecycleOwner, Observer {
+            it?.let {
+                adapter.data = it
+                taskViewModel.totalTasksCount.value = adapter.data.size
+            }
+        })
+
+        // Observe whether the total tasks count in the task view model has changed
+        taskViewModel.totalTasksCount.observe(viewLifecycleOwner, Observer {
+            binding.taskTotal.text = String.format(
+                getString(R.string.home_page_task_summary_msg),
+                taskViewModel.totalTasksCount.value!!)
+        })
 
         return view
     }
