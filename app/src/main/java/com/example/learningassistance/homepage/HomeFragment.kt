@@ -9,7 +9,9 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import com.example.learningassistance.CameraPreviewActivity
+import com.example.learningassistance.DetectionActivity
 import com.example.learningassistance.R
 import com.example.learningassistance.database.TaskDao
 import com.example.learningassistance.database.TaskDatabase
@@ -50,10 +52,13 @@ class HomeFragment : Fragment() {
             taskViewModel,
             { task -> NewTaskSheet(task).show(requireActivity().supportFragmentManager, NewTaskSheet.TAG) },
             { task ->
-                val intent = Intent(requireContext(), CameraPreviewActivity::class.java)
-                val bundle = Bundle()
+                /*val action = HomeFragmentDirections.actionHomeFragmentToCameraPreviewActivity(task.taskDurationMin)
+                this.findNavController().navigate(action)*/
+                //this.findNavController().navigate(R.id.action_homeFragment_to_cameraPreviewFragment)
+                val intent = Intent(requireContext(), DetectionActivity::class.java)
+                /*val bundle = Bundle()
                 bundle.putInt("LEARNING_TIME", task.taskDurationMin)
-                intent.putExtras(bundle)
+                intent.putExtras(bundle)*/
                 startActivity(intent)
         })
         binding.taskRecyclerView.adapter = adapter
