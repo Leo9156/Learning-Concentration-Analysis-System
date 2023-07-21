@@ -2,11 +2,8 @@ package com.example.learningassistance.detection
 
 import android.content.Context
 import android.content.pm.PackageManager
-import android.media.MediaPlayer
 import android.os.Bundle
-import android.os.CountDownTimer
 import android.util.Log
-import android.util.Size
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -16,15 +13,12 @@ import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.example.learningassistance.databinding.FragmentCameraPreviewBinding
-import com.example.learningassistance.facedetection.FaceDetectionProcessor
-import com.example.learningassistance.objectdetection.ObjectDetectionProcessor
+import com.example.learningassistance.databinding.FragmentConcentrationAnalysisBinding
 import java.util.concurrent.Executors
 
-class CameraPreviewFragment : Fragment() {
-    private var _binding: FragmentCameraPreviewBinding? = null
+class ConcentrationAnalysisFragment : Fragment() {
+    private var _binding: FragmentConcentrationAnalysisBinding? = null
     private val binding get() = _binding!!
 
     // Context
@@ -45,7 +39,7 @@ class CameraPreviewFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        _binding = FragmentCameraPreviewBinding.inflate(inflater, container, false)
+        _binding = FragmentConcentrationAnalysisBinding.inflate(inflater, container, false)
         val view = binding.root
 
         return view
@@ -58,27 +52,21 @@ class CameraPreviewFragment : Fragment() {
             startCamera()
         } else {
             requestPermissions(REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS)
-            /*ActivityCompat.requestPermissions(
-                requireActivity(),
-                REQUIRED_PERMISSIONS,
-                REQUEST_CODE_PERMISSIONS
-            )*/
         }
 
 
     }
 
-    private fun allPermissionsGranted() = CameraPreviewFragment.REQUIRED_PERMISSIONS.all {
+    private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
         ContextCompat.checkSelfPermission(safeContext, it) == PackageManager.PERMISSION_GRANTED
     }
 
-    @Deprecated("Deprecated in Java")
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<String>,
         grantResults: IntArray
     ) {
-        if (requestCode == CameraPreviewFragment.REQUEST_CODE_PERMISSIONS) {
+        if (requestCode == ConcentrationAnalysisFragment.REQUEST_CODE_PERMISSIONS) {
             if (allPermissionsGranted()) {
                 startCamera()
             }
@@ -86,7 +74,6 @@ class CameraPreviewFragment : Fragment() {
                 Toast.makeText(safeContext, "Permissions not granted by the user", Toast.LENGTH_SHORT).show()
             }
         }
-
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
@@ -130,7 +117,7 @@ class CameraPreviewFragment : Fragment() {
                 cameraProvider.unbindAll()
                 cameraProvider.bindToLifecycle(this, cameraSelector/*, imageAnalysisYUV, imageAnalysisRGB*/, preview)
             } catch (exc: Exception) {
-                Log.e(CameraPreviewFragment.TAG, "Use case binding failed")
+                Log.e(ConcentrationAnalysisFragment.TAG, "Use case binding failed")
             }
         }, ContextCompat.getMainExecutor(safeContext))
     }

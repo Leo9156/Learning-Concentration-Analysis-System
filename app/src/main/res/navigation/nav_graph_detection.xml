@@ -9,10 +9,21 @@
         android:id="@+id/headPoseMeasureFragment"
         android:name="com.example.learningassistance.detection.HeadPoseMeasureFragment"
         android:label="fragment_head_pose_measure"
-        tools:layout="@layout/fragment_head_pose_measure" />
+        tools:layout="@layout/fragment_head_pose_measure" >
+        <action
+            android:id="@+id/action_headPoseMeasureFragment_to_cameraPreviewFragment"
+            app:destination="@id/concentrationAnalysisFragment" />
+    </fragment>
     <fragment
-        android:id="@+id/cameraPreviewFragment"
-        android:name="com.example.learningassistance.detection.CameraPreviewFragment"
-        android:label="fragment_camera_preview"
-        tools:layout="@layout/fragment_camera_preview" />
+        android:id="@+id/concentrationAnalysisFragment"
+        android:name="com.example.learningassistance.detection.ConcentrationAnalysisFragment"
+        android:label="fragment_concentration_analysis"
+        tools:layout="@layout/fragment_concentration_analysis" >
+        <argument
+            android:name="basicHeadPoseOffsetX"
+            app:argType="float" />
+        <argument
+            android:name="basicHeadPoseOffsetY"
+            app:argType="float" />
+    </fragment>
 </navigation>

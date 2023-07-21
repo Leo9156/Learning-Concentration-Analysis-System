@@ -47,6 +47,7 @@
                 app:layout_constraintTop_toTopOf="parent">
 
                 <ImageView
+                    android:id="@+id/head_pose_face_detection_icon"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="8dp"
@@ -54,6 +55,7 @@
                     tools:src="@drawable/ic_check2" />
 
                 <TextView
+                    android:id="@+id/head_pose_face_detection_info"
                     style="@style/TextAppearance.Material3.TitleSmall"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -72,16 +74,18 @@
                 app:layout_constraintTop_toBottomOf="@+id/head_pose_card_face_title">
 
                 <ImageView
+                    android:id="@+id/head_pose_rotate_icon_x"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="8dp"
-                    android:src="@drawable/ic_rotate"/>
+                    android:src="@drawable/ic_face"/>
 
                 <TextView
+                    android:id="@+id/head_pose_rotate_degree_x"
                     style="@style/TextAppearance.Material3.TitleSmall"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/head_pose_card_eulerx" />
+                    tools:text="@string/head_pose_card_eulerx" />
 
             </LinearLayout>
 
@@ -95,26 +99,36 @@
                 app:layout_constraintTop_toBottomOf="@+id/head_pose_card_eulerx">
 
                 <ImageView
+                    android:id="@+id/head_pose_rotate_icon_y"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="8dp"
-                    android:src="@drawable/ic_rotate"/>
+                    android:src="@drawable/ic_face"/>
 
                 <TextView
+                    android:id="@+id/head_pose_rotate_degree_y"
                     style="@style/TextAppearance.Material3.TitleSmall"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/head_pose_card_eulery" />
+                    tools:text="@string/head_pose_card_eulery" />
 
             </LinearLayout>
-
-
         </androidx.constraintlayout.widget.ConstraintLayout>
-
     </com.google.android.material.card.MaterialCardView>
 
-    <androidx.camera.view.PreviewView
-        android:id="@+id/viewFinderHeadPose"
+    <com.google.android.material.progressindicator.LinearProgressIndicator
+        android:id="@+id/head_pose_analysis_progress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/head_pose_analysis_info_card"
+        android:visibility="invisible"
+        tools:progress="70"/>
+
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginHorizontal="16dp"
@@ -123,7 +137,26 @@
         app:layout_constraintBottom_toTopOf="@+id/head_pose_instrc1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/head_pose_analysis_info_card" />
+        app:layout_constraintTop_toBottomOf="@+id/head_pose_analysis_info_card">
+
+        <androidx.camera.view.PreviewView
+            android:id="@+id/viewFinderHeadPose"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <TextView
+            android:id="@+id/head_pose_start_timer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:textColor="@android:color/white"
+            android:layout_gravity="center"
+            android:gravity="center"
+            style="@style/TextAppearance.Material3.DisplayLarge"
+            android:textSize="100sp"
+            android:visibility="invisible"
+            tools:text="1" />
+    </FrameLayout>
+
 
     <LinearLayout
         android:id="@+id/head_pose_instrc1"
@@ -228,6 +261,30 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
+
+    <!--
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/head_pose_launch_detection_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginBottom="16dp"
+        android:text="@string/next"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:visibility="gone"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/head_pose_restart_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginBottom="16dp"
+        android:text="@string/restart"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/head_pose_launch_detection_button"
+        android:visibility="gone"/>
+        -->
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -81,7 +81,14 @@
     <string name="num4">4.</string>
     <string name="head_pose_instruc4"> During analysis, please not to move the phone or look around. Please focus on what you want to study.</string>
     <string name="face_detection">Face Detection</string>
-    <string name="head_pose_card_eulerx">Head rotation (up and down): %.2f</string>
-    <string name="head_pose_card_eulery">Head rotation (left and right): %.2f</string>
+    <string name="head_pose_card_eulerx">Head rotation (up and down): %.2f degree</string>
+    <string name="head_pose_card_eulery">Head rotation (left and right): %.2f degree</string>
+    <string name="next">Next</string>
+    <string name="restart">Restart</string>
+    <string name="head_pose_analysis_cannot_start">No face detected. Cannot start an analysis!</string>
+    <string name="head_pose_analysis_title_detected">Face Detected</string>
+    <string name="head_pose_analysis_title_not_detected">No Face Detected</string>
+    <string name="head_pose_analysis_restart_msg">No face detected during analysis. Please try again.</string>
+    <string name="concentration_analysis">Concentration Analysis</string>
 
 </resources>

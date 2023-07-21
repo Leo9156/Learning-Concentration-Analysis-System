@@ -2,6 +2,8 @@ package com.example.learningassistance.detection
 
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Color
+import android.media.MediaPlayer
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -13,13 +15,15 @@ import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import com.example.learningassistance.R
-import com.example.learningassistance.databinding.FragmentCameraPreviewBinding
 import com.example.learningassistance.databinding.FragmentHeadPoseMeasureBinding
-import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.snackbar.Snackbar
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 class HeadPoseMeasureFragment : Fragment() {
@@ -31,7 +35,10 @@ class HeadPoseMeasureFragment : Fragment() {
 
     // Camera
     private lateinit var cameraProvider: ProcessCameraProvider
-    private var cameraExecutor = Executors.newSingleThreadExecutor()
+    private lateinit var cameraExecutor: ExecutorService
+
+    // Face detection processor
+    private val headPoseFaceDetectionProcessor = HeadPoseFaceDetectionProcessor()
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -53,17 +60,142 @@ class HeadPoseMeasureFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val headPoseMeasureViewModelFactory = HeadPoseMeasureViewModelFactory(headPoseFaceDetectionProcessor)
+        val headPoseViewModel = ViewModelProvider(
+            requireActivity(),
+            headPoseMeasureViewModelFactory
+        ).get(HeadPoseMeasureViewModel::class.java)
+
         if (allPermissionsGranted()) {
+            // Start the camera
             startCamera()
-            val precautionBottomSheet = HeadPoseMeasurePrecautionBottomSheet()
-            precautionBottomSheet.show(
-                requireActivity().supportFragmentManager,
-                HeadPoseMeasurePrecautionBottomSheet.TAG)
         } else {
             requestPermissions(REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS)
         }
 
+        cameraExecutor = Executors.newSingleThreadExecutor()
 
+        // Show the precaution sheet
+        val precautionBottomSheet = HeadPoseMeasurePrecautionBottomSheet()
+        precautionBottomSheet.show(
+            requireActivity().supportFragmentManager,
+            HeadPoseMeasurePrecautionBottomSheet.TAG)
+
+        // UI handle
+        // Face detection textview in the info card
+        headPoseFaceDetectionProcessor.isFaceDetected.observe(viewLifecycleOwner, Observer {
+            if (it) {
+                binding.headPoseFaceDetectionInfo.text = getString(R.string.head_pose_analysis_title_detected)
+                binding.headPoseFaceDetectionInfo.setTextColor(ContextCompat.getColor(safeContext, R.color.green))
+                binding.headPoseFaceDetectionIcon.setImageResource(R.drawable.ic_check2)
+            } else {
+                binding.headPoseFaceDetectionInfo.text = getString(R.string.head_pose_analysis_title_not_detected)
+                binding.headPoseFaceDetectionInfo.setTextColor(ContextCompat.getColor(safeContext, R.color.red))
+                binding.headPoseFaceDetectionIcon.setImageResource(R.drawable.ic_error)
+            }
+        })
+
+        // Rotation degrees textview in the info card
+        headPoseFaceDetectionProcessor.rotX.observe(viewLifecycleOwner, Observer {
+            if (it != null) {
+                binding.headPoseRotateDegreeX.visibility = View.VISIBLE
+                binding.headPoseRotateIconX.visibility = View.VISIBLE
+                binding.headPoseRotateDegreeX.text = String.format(getString(R.string.head_pose_card_eulerx), it)
+            } else {
+                binding.headPoseRotateDegreeX.visibility = View.INVISIBLE
+                binding.headPoseRotateIconX.visibility = View.INVISIBLE
+            }
+        })
+
+        headPoseFaceDetectionProcessor.rotY.observe(viewLifecycleOwner, Observer {
+            if (it != null) {
+                binding.headPoseRotateDegreeY.visibility = View.VISIBLE
+                binding.headPoseRotateIconY.visibility = View.VISIBLE
+                binding.headPoseRotateDegreeY.text = String.format(getString(R.string.head_pose_card_eulery), it)
+            } else {
+                binding.headPoseRotateDegreeY.visibility = View.INVISIBLE
+                binding.headPoseRotateIconY.visibility = View.INVISIBLE
+            }
+        })
+
+        // Start detection button
+        binding.headPoseStartButton.setOnClickListener {
+            if (headPoseViewModel.canStartAnalysis()) {
+                headPoseViewModel.startPrepareTimer.value = true  // Should start the prepare timer
+            } else {
+                Snackbar.make(
+                    binding.headPoseStartButton,
+                    getString(R.string.head_pose_analysis_cannot_start),
+                    Snackbar.LENGTH_SHORT).show()
+            }
+        }
+
+        // Prepare Timer
+        headPoseViewModel.startPrepareTimer.observe(viewLifecycleOwner, Observer {
+            if (it) {
+                binding.headPoseStartButton.visibility = View.INVISIBLE
+                headPoseViewModel.startPrepareTimer()
+            }
+        })
+        headPoseViewModel.prepareTimerLeftCount.observe(viewLifecycleOwner, Observer {
+            if (it == 0) {
+                binding.headPoseStartTimer.visibility = View.INVISIBLE
+            } else {
+                binding.headPoseStartTimer.visibility = View.VISIBLE
+                binding.headPoseStartTimer.text = it.toString()
+                val mediaPlayer = MediaPlayer.create(safeContext, R.raw.beep_sound)
+                mediaPlayer.setOnCompletionListener {
+                    it.release()
+                }
+                mediaPlayer.start()
+            }
+        })
+
+        // Analysis Timer
+        headPoseViewModel.isAnalysisStarting.observe(viewLifecycleOwner, Observer {
+            if (it) {
+                binding.headPoseAnalysisProgress.visibility = View.VISIBLE
+            } else {
+                binding.headPoseAnalysisProgress.visibility = View.INVISIBLE
+            }
+        })
+        headPoseViewModel.analysisProgress.observe(viewLifecycleOwner, Observer {
+            binding.headPoseAnalysisProgress.progress = it
+        })
+        headPoseViewModel.isAnalysisFinished.observe(viewLifecycleOwner, Observer {
+            if (it) {
+                // Play the sound
+                val mediaPlayer = MediaPlayer.create(safeContext, R.raw.head_pose_complete)
+                mediaPlayer.setOnCompletionListener {
+                    it.release()
+                }
+                mediaPlayer.start()
+
+                // Launch the concentration analysis fragment
+                val action = HeadPoseMeasureFragmentDirections
+                    .actionHeadPoseMeasureFragmentToCameraPreviewFragment(
+                        headPoseFaceDetectionProcessor.headEulerXOffset,
+                        headPoseFaceDetectionProcessor.headEulerYOffset
+                    )
+                this.findNavController().navigate(action)
+            }
+        })
+
+        // Restart handling
+        headPoseFaceDetectionProcessor.hasToRestart.observe(viewLifecycleOwner, Observer {
+            if (it) {
+                binding.headPoseStartButton.visibility = View.VISIBLE
+                headPoseViewModel.restart()
+                MaterialAlertDialogBuilder(safeContext)
+                    .setTitle(getString(R.string.head_pose_analysis_title_not_detected))
+                    .setIcon(R.drawable.ic_warning)
+                    .setMessage(getString(R.string.head_pose_analysis_restart_msg))
+                    .setPositiveButton("OK") { dialog, _ ->
+                        dialog.dismiss()
+                    }
+                    .show()
+            }
+        })
     }
 
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
@@ -97,37 +229,28 @@ class HeadPoseMeasureFragment : Fragment() {
             // Select back camera as a default
             val cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
 
-            // Preview usecase
+            // Preview use case
             val preview = Preview.Builder()
                 .build()
                 .also {
                     it.setSurfaceProvider(binding.viewFinderHeadPose.surfaceProvider)
                 }
 
+            // Image Analysis use case
             val imageAnalysisYUV = ImageAnalysis.Builder()
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .build()
-
-            val imageAnalysisRGB = ImageAnalysis.Builder()
-                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
-                .build()
-
-            /*imageAnalysisYUV.setAnalyzer(
+            imageAnalysisYUV.setAnalyzer(
                 cameraExecutor,
-                faceDetectionProcessor
+                headPoseFaceDetectionProcessor
             )
 
-            imageAnalysisRGB.setAnalyzer(
-                cameraExecutor,
-                objectDetectionProcessor
-            )*/
 
             try {
                 cameraProvider.unbindAll()
-                cameraProvider.bindToLifecycle(this, cameraSelector/*, imageAnalysisYUV, imageAnalysisRGB*/, preview)
+                cameraProvider.bindToLifecycle(this, cameraSelector, imageAnalysisYUV, preview)
             } catch (exc: Exception) {
-                Log.e(HeadPoseMeasureFragment.TAG, "Use case binding failed")
+                Log.e(TAG, "Camera use case binding failed")
             }
         }, ContextCompat.getMainExecutor(safeContext))
     }
@@ -135,6 +258,7 @@ class HeadPoseMeasureFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+        headPoseFaceDetectionProcessor.close()
     }
 
     companion object {
