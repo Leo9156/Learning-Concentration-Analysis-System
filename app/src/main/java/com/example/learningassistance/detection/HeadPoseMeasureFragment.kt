@@ -27,8 +27,12 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 class HeadPoseMeasureFragment : Fragment() {
+    // view binding
     private var _binding: FragmentHeadPoseMeasureBinding? = null
     private val binding get() = _binding!!
+
+    // view model
+    private var headPoseViewModel: HeadPoseMeasureViewModel? = null
 
     // Context
     private lateinit var safeContext: Context
@@ -45,7 +49,6 @@ class HeadPoseMeasureFragment : Fragment() {
         this.safeContext = context
     }
 
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -54,6 +57,9 @@ class HeadPoseMeasureFragment : Fragment() {
         _binding = FragmentHeadPoseMeasureBinding.inflate(inflater, container, false)
         val view = binding.root
 
+        // Initialize the face detector
+        headPoseFaceDetectionProcessor.start()
+
         return view
     }
 
@@ -61,10 +67,14 @@ class HeadPoseMeasureFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val headPoseMeasureViewModelFactory = HeadPoseMeasureViewModelFactory(headPoseFaceDetectionProcessor)
-        val headPoseViewModel = ViewModelProvider(
-            requireActivity(),
-            headPoseMeasureViewModelFactory
-        ).get(HeadPoseMeasureViewModel::class.java)
+
+        if (headPoseViewModel == null) {
+            Log.v(TAG, "Create a new view model")
+            headPoseViewModel = ViewModelProvider(
+                requireActivity(),
+                headPoseMeasureViewModelFactory
+            ).get(HeadPoseMeasureViewModel::class.java)
+        }
 
         if (allPermissionsGranted()) {
             // Start the camera
@@ -120,8 +130,8 @@ class HeadPoseMeasureFragment : Fragment() {
 
         // Start detection button
         binding.headPoseStartButton.setOnClickListener {
-            if (headPoseViewModel.canStartAnalysis()) {
-                headPoseViewModel.startPrepareTimer.value = true  // Should start the prepare timer
+            if (headPoseViewModel!!.canStartAnalysis()) {
+                headPoseViewModel!!.startPrepareTimer.value = true  // Should start the prepare timer
             } else {
                 Snackbar.make(
                     binding.headPoseStartButton,
@@ -131,13 +141,16 @@ class HeadPoseMeasureFragment : Fragment() {
         }
 
         // Prepare Timer
-        headPoseViewModel.startPrepareTimer.observe(viewLifecycleOwner, Observer {
+        headPoseViewModel!!.startPrepareTimer.observe(viewLifecycleOwner, Observer {
             if (it) {
                 binding.headPoseStartButton.visibility = View.INVISIBLE
-                headPoseViewModel.startPrepareTimer()
+                headPoseViewModel!!.startPrepareTimer()
+            } else {
+                binding.headPoseStartButton.visibility = View.VISIBLE
+                binding.headPoseStartTimer.visibility = View.INVISIBLE
             }
         })
-        headPoseViewModel.prepareTimerLeftCount.observe(viewLifecycleOwner, Observer {
+        headPoseViewModel!!.prepareTimerLeftCount.observe(viewLifecycleOwner, Observer {
             if (it == 0) {
                 binding.headPoseStartTimer.visibility = View.INVISIBLE
             } else {
@@ -152,17 +165,18 @@ class HeadPoseMeasureFragment : Fragment() {
         })
 
         // Analysis Timer
-        headPoseViewModel.isAnalysisStarting.observe(viewLifecycleOwner, Observer {
+        headPoseViewModel!!.isAnalysisStarting.observe(viewLifecycleOwner, Observer {
             if (it) {
                 binding.headPoseAnalysisProgress.visibility = View.VISIBLE
+                binding.headPoseStartButton.visibility = View.INVISIBLE
             } else {
                 binding.headPoseAnalysisProgress.visibility = View.INVISIBLE
             }
         })
-        headPoseViewModel.analysisProgress.observe(viewLifecycleOwner, Observer {
+        headPoseViewModel!!.analysisProgress.observe(viewLifecycleOwner, Observer {
             binding.headPoseAnalysisProgress.progress = it
         })
-        headPoseViewModel.isAnalysisFinished.observe(viewLifecycleOwner, Observer {
+        headPoseViewModel!!.isAnalysisFinished.observe(viewLifecycleOwner, Observer {
             if (it) {
                 // Play the sound
                 val mediaPlayer = MediaPlayer.create(safeContext, R.raw.head_pose_complete)
@@ -170,6 +184,9 @@ class HeadPoseMeasureFragment : Fragment() {
                     it.release()
                 }
                 mediaPlayer.start()
+
+                // Reset the state of the view model
+                headPoseViewModel!!.reset()
 
                 // Launch the concentration analysis fragment
                 val action = HeadPoseMeasureFragmentDirections
@@ -185,7 +202,7 @@ class HeadPoseMeasureFragment : Fragment() {
         headPoseFaceDetectionProcessor.hasToRestart.observe(viewLifecycleOwner, Observer {
             if (it) {
                 binding.headPoseStartButton.visibility = View.VISIBLE
-                headPoseViewModel.restart()
+                headPoseViewModel!!.restart()
                 MaterialAlertDialogBuilder(safeContext)
                     .setTitle(getString(R.string.head_pose_analysis_title_not_detected))
                     .setIcon(R.drawable.ic_warning)
@@ -255,10 +272,20 @@ class HeadPoseMeasureFragment : Fragment() {
         }, ContextCompat.getMainExecutor(safeContext))
     }
 
+    override fun onPause() {
+        super.onPause()
+        headPoseFaceDetectionProcessor.close()
+        headPoseViewModel!!.reset()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        headPoseFaceDetectionProcessor.start()
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-        headPoseFaceDetectionProcessor.close()
     }
 
     companion object {

@@ -90,5 +90,13 @@
     <string name="head_pose_analysis_title_not_detected">No Face Detected</string>
     <string name="head_pose_analysis_restart_msg">No face detected during analysis. Please try again.</string>
     <string name="concentration_analysis">Concentration Analysis</string>
+    <string name="detection_timer">%1$02d:%2$02d:%3$02d</string>
+    <string name="pause">pause</string>
+    <string name="stop">stop</string>
+    <string name="setting">Setting</string>
+    <string name="show_graphical_detection_results">Show graphical detection results</string>
+    <string name="show_graphical_detection_result_details">Show the graphical detection results on the camera view. Such as face bounding boxes, face landmarks, and object bounding boxes.</string>
+    <string name="hide_detection_information">Hide detection information</string>
+    <string name="hide_detection_info_details">Hide the details information of the detection results. Such as face detection, eyes detection, head rotation detection and electronic devices detection.</string>
 
 </resources>

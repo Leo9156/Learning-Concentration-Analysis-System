@@ -20,7 +20,8 @@ class HeadPoseMeasureViewModel(
     var analysisProgress = MutableLiveData<Int>(0)
 
     // Count down timer
-    private lateinit var analysisTimer: CountDownTimer
+    private var prepareTimer: CountDownTimer? = null
+    private var analysisTimer: CountDownTimer? = null
 
     fun canStartAnalysis(): Boolean {
         this.canStartAnalysis = headPoseFaceDetectionProcessor.canAnalysisStart
@@ -28,7 +29,7 @@ class HeadPoseMeasureViewModel(
     }
 
     fun startPrepareTimer() {
-        object : CountDownTimer(3000, 1000) {
+        prepareTimer = object : CountDownTimer(3000, 1000) {
             override fun onTick(millisUntilFinished: Long) {
                 prepareTimerLeftCount.value = (millisUntilFinished / 1000).toInt() + 1
             }
@@ -52,7 +53,6 @@ class HeadPoseMeasureViewModel(
 
             override fun onFinish() {
                 // Change the state
-                isAnalysisFinished.value = true
                 isAnalysisStarting.value = false
                 headPoseFaceDetectionProcessor.isAnalysisStarting = false
                 analysisProgress.value = 0
@@ -62,14 +62,37 @@ class HeadPoseMeasureViewModel(
 
                 // Reset the attributes in the head processor
                 headPoseFaceDetectionProcessor.resetProperties()
+
+                isAnalysisFinished.value = true
             }
         }.start()
     }
 
     fun restart() {
-        analysisTimer.cancel()
+        if (analysisTimer != null) {
+            analysisTimer!!.cancel()
+        }
         analysisProgress.value = 0
         isAnalysisStarting.value = false
+        headPoseFaceDetectionProcessor.isAnalysisStarting = false
+        headPoseFaceDetectionProcessor.resetProperties()
+        headPoseFaceDetectionProcessor.hasToRestart.value = false
+    }
+
+    fun reset() {
+        isAnalysisStarting.value = false
+        isAnalysisFinished.value = false
+        canStartAnalysis = false
+        startPrepareTimer.value = false
+        if (analysisTimer != null) {
+            analysisTimer!!.cancel()
+            analysisTimer = null
+        }
+        if (prepareTimer != null) {
+            prepareTimer!!.cancel()
+            prepareTimer = null
+        }
+        analysisProgress.value = 0
         headPoseFaceDetectionProcessor.isAnalysisStarting = false
         headPoseFaceDetectionProcessor.resetProperties()
         headPoseFaceDetectionProcessor.hasToRestart.value = false

@@ -12,7 +12,9 @@
         tools:layout="@layout/fragment_head_pose_measure" >
         <action
             android:id="@+id/action_headPoseMeasureFragment_to_cameraPreviewFragment"
-            app:destination="@id/concentrationAnalysisFragment" />
+            app:destination="@id/concentrationAnalysisFragment"
+            app:popUpTo="@id/nav_graph_detection"
+            app:popUpToInclusive="true" />
     </fragment>
     <fragment
         android:id="@+id/concentrationAnalysisFragment"

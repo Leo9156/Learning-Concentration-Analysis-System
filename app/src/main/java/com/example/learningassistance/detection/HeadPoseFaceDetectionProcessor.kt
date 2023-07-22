@@ -6,6 +6,7 @@ import androidx.camera.core.ImageProxy
 import androidx.lifecycle.MutableLiveData
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.FaceDetection
+import com.google.mlkit.vision.face.FaceDetector
 import com.google.mlkit.vision.face.FaceDetectorOptions
 
 class HeadPoseFaceDetectionProcessor: ImageAnalysis.Analyzer {
@@ -34,7 +35,7 @@ class HeadPoseFaceDetectionProcessor: ImageAnalysis.Analyzer {
         .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
         .setClassificationMode(FaceDetectorOptions.CLASSIFICATION_MODE_ALL)
         .build()
-    private val faceDetectionDetector = FaceDetection.getClient(faceDetectionOptions)
+    private var faceDetectionDetector: FaceDetector? = null
 
 
     @androidx.annotation.OptIn(androidx.camera.core.ExperimentalGetImage::class)
@@ -45,43 +46,47 @@ class HeadPoseFaceDetectionProcessor: ImageAnalysis.Analyzer {
             // Get the image
             val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
 
-            faceDetectionDetector.process(image)
-                .addOnSuccessListener { faces ->
-                    if (faces.size == 0) {
-                        // Change the state of analysis
-                        this.canAnalysisStart = false
-                        this.isFaceDetected.value = false
-
-                        // Set the rotation degrees to null
-                        rotX.value = null
-                        rotY.value = null
-
-                        // If analyzing, stop the analysis
-                        if (isAnalysisStarting) {
-                            hasToRestart.value = true
-                        }
-                    } else {
-                        for (face in faces) {
+            if (faceDetectionDetector != null) {
+                faceDetectionDetector!!.process(image)
+                    .addOnSuccessListener { faces ->
+                        if (faces.size == 0) {
                             // Change the state of analysis
-                            this.canAnalysisStart = true
-                            this.isFaceDetected.value = true
+                            this.canAnalysisStart = false
+                            this.isFaceDetected.value = false
 
-                            // Get the rotation degrees of head
-                            rotX.value = face.headEulerAngleX
-                            rotY.value = face.headEulerAngleY
+                            // Set the rotation degrees to null
+                            rotX.value = null
+                            rotY.value = null
 
+                            // If analyzing, stop the analysis
                             if (isAnalysisStarting) {
-                                sumHeadEulerAngle()
+                                hasToRestart.value = true
+                            }
+                        } else {
+                            for (face in faces) {
+                                // Change the state of analysis
+                                this.canAnalysisStart = true
+                                this.isFaceDetected.value = true
+
+                                // Get the rotation degrees of head
+                                rotX.value = face.headEulerAngleX
+                                rotY.value = face.headEulerAngleY
+
+                                if (isAnalysisStarting) {
+                                    sumHeadEulerAngle()
+                                }
                             }
                         }
                     }
-                }
-                .addOnFailureListener { e ->
-                    Log.e(TAG, "Face detector failed. $e")
-                }
-                .addOnCompleteListener {
-                    imageProxy.close()
-                }
+                    .addOnFailureListener { e ->
+                        Log.e(TAG, "Face detector failed. $e")
+                    }
+                    .addOnCompleteListener {
+                        imageProxy.close()
+                    }
+            } else {
+                imageProxy.close()
+            }
         }
     }
 
@@ -106,7 +111,16 @@ class HeadPoseFaceDetectionProcessor: ImageAnalysis.Analyzer {
     }
 
     fun close() {
-        faceDetectionDetector.close()
+        if (faceDetectionDetector != null) {
+            faceDetectionDetector!!.close()
+            faceDetectionDetector = null
+        }
+    }
+
+    fun start() {
+        if (faceDetectionDetector == null) {
+            faceDetectionDetector = FaceDetection.getClient(faceDetectionOptions)
+        }
     }
 
     companion object {
