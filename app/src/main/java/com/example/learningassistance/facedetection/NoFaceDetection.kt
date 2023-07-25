@@ -13,8 +13,6 @@ class NoFaceDetection(private val context: Context) {
     private var totalFrameNumber = 0
     private var isNoFaceDialogShowing = false
     private var noFaceFrameNumber = 0
-    private var startNoFaceTimerMs = System.currentTimeMillis()
-    private var endNoFaceTimerMs = System.currentTimeMillis()
     private var duration: Long = 0
     private var perNoFace = 0f
     private var detectionPeriodMs: Long = 30000
@@ -23,9 +21,18 @@ class NoFaceDetection(private val context: Context) {
     private var isNoFaceOccur = false
     private var isNoFace = false
 
+    // Timer
+    private var startNoFaceTimerMs = System.currentTimeMillis()
+    private var endNoFaceTimerMs = System.currentTimeMillis()
+
+    // State
+    var isNoFaceDetecting = false
+
+    // Sound
     private var isAlarmPlaying = false
     private lateinit var mediaPlayer: MediaPlayer
 
+    // Vibration
     private var isVibrating = false
     private val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
 

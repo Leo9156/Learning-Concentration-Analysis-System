@@ -1,8 +1,7 @@
-package com.example.learningassistance.detection
+package com.example.learningassistance.detection.headpose
 
 import android.content.Context
 import android.content.pm.PackageManager
-import android.graphics.Color
 import android.media.MediaPlayer
 import android.os.Bundle
 import android.util.Log
@@ -69,7 +68,7 @@ class HeadPoseMeasureFragment : Fragment() {
         val headPoseMeasureViewModelFactory = HeadPoseMeasureViewModelFactory(headPoseFaceDetectionProcessor)
 
         if (headPoseViewModel == null) {
-            Log.v(TAG, "Create a new view model")
+            // Log.v(TAG, "Create a new view model")
             headPoseViewModel = ViewModelProvider(
                 requireActivity(),
                 headPoseMeasureViewModelFactory
@@ -89,7 +88,8 @@ class HeadPoseMeasureFragment : Fragment() {
         val precautionBottomSheet = HeadPoseMeasurePrecautionBottomSheet()
         precautionBottomSheet.show(
             requireActivity().supportFragmentManager,
-            HeadPoseMeasurePrecautionBottomSheet.TAG)
+            HeadPoseMeasurePrecautionBottomSheet.TAG
+        )
 
         // UI handle
         // Face detection textview in the info card
@@ -189,8 +189,8 @@ class HeadPoseMeasureFragment : Fragment() {
                 headPoseViewModel!!.reset()
 
                 // Launch the concentration analysis fragment
-                val action = HeadPoseMeasureFragmentDirections
-                    .actionHeadPoseMeasureFragmentToCameraPreviewFragment(
+                val action =
+                    HeadPoseMeasureFragmentDirections.actionHeadPoseMeasureFragmentToCameraPreviewFragment(
                         headPoseFaceDetectionProcessor.headEulerXOffset,
                         headPoseFaceDetectionProcessor.headEulerYOffset
                     )

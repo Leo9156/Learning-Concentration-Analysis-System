@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".detection.ConcentrationAnalysisFragment">
+    tools:context=".detection.concentration.ConcentrationAnalysisFragment">
 
 
     <TextView
@@ -167,8 +167,7 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
     </com.google.android.material.card.MaterialCardView>
 
-    <androidx.camera.view.PreviewView
-        android:id="@+id/viewFinder"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginStart="16dp"
@@ -178,12 +177,38 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/detection_info_card" />
+        app:layout_constraintTop_toBottomOf="@id/detection_info_card">
+
+        <androidx.camera.view.PreviewView
+            android:id="@+id/viewFinder"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <com.example.learningassistance.graphicOverlay.FaceDetectionGraphicOverlay
+            android:id="@+id/face_detection_graphic_overlay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="invisible"/>
+
+        <com.example.learningassistance.graphicOverlay.FaceMeshGraphicOverlay
+            android:id="@+id/face_mesh_graphic_overlay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="invisible"/>
+
+        <com.example.learningassistance.graphicOverlay.ObjectDetectionGraphicOverlay
+            android:id="@+id/object_detection_graphic_overlay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="invisible"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:id="@+id/detection_sheet_coordinate"
         android:layout_width="match_parent"
-        android:layout_height="350dp"
+        android:layout_height="420dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
@@ -229,8 +254,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:src="@drawable/ic_pause"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/detection_stop"
+                app:layout_constraintStart_toEndOf="@+id/detection_play"
                 app:layout_constraintTop_toBottomOf="@+id/drag_handle" />
 
             <TextView
@@ -345,7 +370,18 @@
                 app:layout_constraintStart_toEndOf="@+id/detection_result_setting_text_content"
                 app:layout_constraintTop_toTopOf="@+id/detection_result_setting_text_content" />
 
-
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/restart_head_pose_btn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="32dp"
+                android:layout_marginEnd="16dp"
+                android:text="@string/restart_head_position_analysis"
+                app:icon="@drawable/ic_restart"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/detection_result_setting_text_content" />
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 

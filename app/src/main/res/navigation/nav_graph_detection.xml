@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/headPoseMeasureFragment"
-        android:name="com.example.learningassistance.detection.HeadPoseMeasureFragment"
+        android:name="com.example.learningassistance.detection.headpose.HeadPoseMeasureFragment"
         android:label="fragment_head_pose_measure"
         tools:layout="@layout/fragment_head_pose_measure" >
         <action
@@ -18,7 +18,7 @@
     </fragment>
     <fragment
         android:id="@+id/concentrationAnalysisFragment"
-        android:name="com.example.learningassistance.detection.ConcentrationAnalysisFragment"
+        android:name="com.example.learningassistance.detection.concentration.ConcentrationAnalysisFragment"
         android:label="fragment_concentration_analysis"
         tools:layout="@layout/fragment_concentration_analysis" >
         <argument

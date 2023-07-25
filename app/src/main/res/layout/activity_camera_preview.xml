@@ -14,7 +14,6 @@
         android:layout_height="match_parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:layout_editor_absoluteX="0dp">
-
     </androidx.camera.view.PreviewView>
 
     <TextView

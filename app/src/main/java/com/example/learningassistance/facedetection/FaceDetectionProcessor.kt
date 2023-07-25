@@ -78,7 +78,7 @@ class FaceDetectionProcessor(
     private val faceMeshDetector = FaceMeshDetection.getClient(faceMeshOptions.build())
 
     // Create the analyzer based on head pose
-    private val headPoseAttentionAnalyzer = HeadPoseAttentionAnalysis(context, root, tvHeadPoseAttentionAnalyzerTimer)
+    private val headPoseAttentionAnalyzer = HeadPoseAttentionAnalysis(context)
 
     // Create the pose detector of ML kit
     private val poseDetectOptions = AccuratePoseDetectorOptions.Builder()
@@ -229,7 +229,7 @@ class FaceDetectionProcessor(
             if (noFaceDetector.isNoFace()) {
                 headPoseAttentionAnalyzer.increaseTotalInattentionFrame()
             } else {
-                headPoseAttentionAnalyzer.analyzeHeadPose(rotX, rotY, rotZ)
+                headPoseAttentionAnalyzer.analyzeHeadPose(rotX, rotY)
             }
 
             headPoseAttentionAnalyzer.evaluateAttention()

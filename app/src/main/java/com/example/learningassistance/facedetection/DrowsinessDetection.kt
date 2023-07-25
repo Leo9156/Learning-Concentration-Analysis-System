@@ -16,9 +16,6 @@ class DrowsinessDetection(private val context: Context) {
     private var totalFrameNumber = 0
     private var isFatigueDialogShowing = false
     private var closedEyesFrameNumber = 0
-    private var startDrowsinessTimerMs = System.currentTimeMillis()
-    private var endDrowsinessTimerMs = System.currentTimeMillis()
-    private var duration: Long = 0
     private var perClose = 0f
     private var closedEyeThreshold = 0.2
     private var detectionPeriodMs: Long = 30000
@@ -31,9 +28,19 @@ class DrowsinessDetection(private val context: Context) {
     private var rotY = 0f
     private var rotZ = 0f
 
+    // Timer
+    private var startDrowsinessTimerMs = System.currentTimeMillis()
+    private var endDrowsinessTimerMs = System.currentTimeMillis()
+    private var duration: Long = 0
+
+    // State
+    var isDrowsinessAnalyzing = false
+
+    // sound
     private var isAlarmPlaying = false
     private lateinit var mediaPlayer: MediaPlayer
 
+    // vibration
     private var isVibrating = false
     private val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
 
@@ -186,9 +193,7 @@ class DrowsinessDetection(private val context: Context) {
     }
 
     fun playAlarm() {
-        //val alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
         mediaPlayer = MediaPlayer.create(context, R.raw.alarm_sound)
-        //mediaPlayer = MediaPlayer.create(context, alarmUri)
         mediaPlayer.isLooping = true
         mediaPlayer.start()
         isAlarmPlaying = true
@@ -265,9 +270,9 @@ class DrowsinessDetection(private val context: Context) {
     }
 
     fun resetEAR() {
-        this.EAR = 1.0f
-        this.leftEAR = 1.0f
-        this.rightEAR = 1.0f
+        this.EAR = 2.0f
+        this.leftEAR = 2.0f
+        this.rightEAR = 2.0f
     }
 
     fun calculateEAR(allPoints: List<FaceMeshPoint>) {

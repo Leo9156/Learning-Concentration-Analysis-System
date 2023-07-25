@@ -17,7 +17,10 @@ data class Task(
     var taskDescription: String = "",
 
     @ColumnInfo(name = "task_duration")
-    var taskDurationMin: Int = 0,
+    var taskDurationMin: Int = 0,  // Total time of the task
+
+    /*@ColumnInfo(name = "task_time_left")
+    var taskTimeLeft: Int = 0,*/
 
     @ColumnInfo(name = "task_date")
     var taskDate: String = "",

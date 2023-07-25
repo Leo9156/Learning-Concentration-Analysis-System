@@ -2,17 +2,17 @@ package com.example.learningassistance.facedetection
 
 import android.content.Context
 import android.media.MediaPlayer
+import android.os.CountDownTimer
 import android.util.Log
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.example.learningassistance.R
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 
 // TODO: Design more accurate method to distinguish look around and look at other side for a period of time
 class HeadPoseAttentionAnalysis(
     private val context: Context,
-    private val root: ConstraintLayout,
-    private val tvHeadPoseAttentionAnalyzerTimer: TextView
 ) {
     private var slidingWindowSize = 30
     private var totalAttentionFrame = 0
@@ -21,10 +21,11 @@ class HeadPoseAttentionAnalysis(
     private var xNegativeThreshold = -20.0f
     private var yPositiveThreshold = 20.0f
     private var yNegativeThreshold = -20.0f
-    //private var zPositiveThreshold = 0f
-    //private var zNegativeThreshold = 0f
     private var isAttention = true
     private lateinit var mediaPlayer: MediaPlayer
+    var isHeadPoseAnalyzing = false
+    var isAlertDialogShowing = false
+    var isDistracted = false
 
 
     // TODO: Temporary method to show whether the user is attentive
@@ -35,8 +36,6 @@ class HeadPoseAttentionAnalysis(
     private var inattentionThreshold = 0.3f
     private var totalFrame = 0
     private var inattentionFrame = 0
-
-
 
     fun setSlidingWindowSize(size: Int) {
         this.slidingWindowSize = size
@@ -74,11 +73,11 @@ class HeadPoseAttentionAnalysis(
         return this.isAttention
     }
 
-    /*fun setThreasholdZ(angle: Float) {
-        this.zPositiveThreshold = angle
-    }*/
+    fun startTimer() {
+        this.startTimerMs = System.currentTimeMillis()
+    }
 
-    fun analyzeHeadPose(eulerX: Float, eulerY: Float, eulerZ: Float) {
+    fun analyzeHeadPose(eulerX: Float, eulerY: Float) {
         if (eulerX > xPositiveThreshold || eulerX < xNegativeThreshold) {
             this.totalInattentionFrame++
         } else if (eulerY > yPositiveThreshold || eulerY < yNegativeThreshold) {
@@ -111,14 +110,11 @@ class HeadPoseAttentionAnalysis(
         endTimerMs = System.currentTimeMillis()
         duration = endTimerMs - startTimerMs
 
-        tvHeadPoseAttentionAnalyzerTimer.text = context.getString(R.string.head_pose_attention_timer, duration / 1000)
-
         if (duration >= 30000) {
             perAttention = inattentionFrame.toFloat() / totalFrame.toFloat()
 
             if (perAttention > inattentionThreshold) {
-                Snackbar.make(root, R.string.head_pose_inattention_msg, Snackbar.LENGTH_SHORT)
-                    .show()
+                isDistracted = true
 
                 mediaPlayer = MediaPlayer.create(context, R.raw.attention_alarm)
                 mediaPlayer.setOnCompletionListener { mp ->

@@ -30,6 +30,7 @@ class TaskViewModel(val dao: TaskDao) : ViewModel() {
             task.taskName = newTaskName
             task.taskDescription = newTaskDescription
             task.taskDurationMin = newTaskDuration
+            //task.taskTimeLeft = newTaskDuration
             task.taskDate = newTaskCurrentDate
 
             // Insert the new task into task table

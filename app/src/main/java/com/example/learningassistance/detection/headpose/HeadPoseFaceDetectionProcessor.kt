@@ -1,4 +1,4 @@
-package com.example.learningassistance.detection
+package com.example.learningassistance.detection.headpose
 
 import android.util.Log
 import androidx.camera.core.ImageAnalysis

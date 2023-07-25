@@ -12,7 +12,7 @@
     <string name="no_face_timer">%1$d</string>
     <string name="head_pose_attention_timer">%1$d</string>
     <string name="drowsiness_tired_msg">You are tired</string>
-    <string name="warning">WARNING!</string>
+    <string name="warning">Warning</string>
     <string name="are_you_still_there">Are you still there?</string>
     <string name="drowsiness_alert_dialog_msg">You appear to be fatigue. Don\'t fall asleep! If you want to close the alarm, please click the close button below.</string>
     <string name="no_face_alert_dialog_msg">We cannot see your beautiful face! Please check and adjust your camera so that the system can see your face. </string>
@@ -37,7 +37,7 @@
     <string name="head_pose_retry_msg">No faces detected while measuring basic head poses. Please try again!</string>
     <string name="retry_basic_head_pose_measurement_msg">Retry basic head pose measurement?</string>
     <string name="retyr_basic_head_pose_measurement_content">Do you want to measure your basic head pose again?</string>
-    <string name="head_pose_inattention_msg">Don\'t look around! Please pay attention</string>
+    <string name="head_pose_inattention_msg">Don\'t look around! Please pay attention on your learning task. If you have a hard time maintaining your concentration, consider taking a rest.</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="home">Home</string>
@@ -81,8 +81,8 @@
     <string name="num4">4.</string>
     <string name="head_pose_instruc4"> During analysis, please not to move the phone or look around. Please focus on what you want to study.</string>
     <string name="face_detection">Face Detection</string>
-    <string name="head_pose_card_eulerx">Head rotation (up and down): %.2f degree</string>
-    <string name="head_pose_card_eulery">Head rotation (left and right): %.2f degree</string>
+    <string name="head_pose_card_eulerx">Rotation (up and down): %.2f degree</string>
+    <string name="head_pose_card_eulery">Rotation (left and right): %.2f degree</string>
     <string name="next">Next</string>
     <string name="restart">Restart</string>
     <string name="head_pose_analysis_cannot_start">No face detected. Cannot start an analysis!</string>
@@ -98,5 +98,8 @@
     <string name="show_graphical_detection_result_details">Show the graphical detection results on the camera view. Such as face bounding boxes, face landmarks, and object bounding boxes.</string>
     <string name="hide_detection_information">Hide detection information</string>
     <string name="hide_detection_info_details">Hide the details information of the detection results. Such as face detection, eyes detection, head rotation detection and electronic devices detection.</string>
-
+    <string name="restart_head_position_analysis">restart basic head position analysis</string>
+    <string name="eyes_open">Eyes open</string>
+    <string name="eyes_close">Eyes close</string>
+    <string name="pay_attention">Pay attention</string>
 </resources>
