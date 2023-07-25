@@ -1,27 +1,25 @@
 package com.example.learningassistance.detection.concentration
 
 import android.content.Context
-import android.media.MediaPlayer
-import android.os.Build.VERSION_CODES.M
 import android.os.CountDownTimer
 import android.util.Log
 import android.widget.Toast
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.learningassistance.R
-import com.example.learningassistance.detection.headpose.HeadPoseFaceDetectionProcessor
-import com.example.learningassistance.facedetection.BasicHeadPoseMeasurement
 import com.example.learningassistance.facedetection.DrowsinessDetection
-import com.example.learningassistance.facedetection.FaceDetectionProcessor
 import com.example.learningassistance.facedetection.HeadPoseAttentionAnalysis
 import com.example.learningassistance.facedetection.NoFaceDetection
+import com.example.learningassistance.graphicOverlay.FaceDetectionGraphicOverlay
+import com.example.learningassistance.graphicOverlay.FaceMeshGraphicOverlay
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.face.Face
 import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetector
 import com.google.mlkit.vision.face.FaceDetectorOptions
+import com.google.mlkit.vision.facemesh.FaceMesh
 import com.google.mlkit.vision.facemesh.FaceMeshDetection
 import com.google.mlkit.vision.facemesh.FaceMeshDetector
 import com.google.mlkit.vision.facemesh.FaceMeshDetectorOptions
@@ -29,7 +27,9 @@ import com.google.mlkit.vision.facemesh.FaceMeshDetectorOptions
 class ConcentrationAnalysisFaceProcessor(
     private val context: Context,
     private val headEulerOffsetX: Float,
-    private val headEulerOffsetY: Float
+    private val headEulerOffsetY: Float,
+    private val faceGraphicOverlay: FaceDetectionGraphicOverlay,
+    private val faceMeshGraphicOverlay: FaceMeshGraphicOverlay
     ) : ImageAnalysis.Analyzer {
     // Face detector
     private val faceDetectionOptions = FaceDetectorOptions.Builder()
@@ -59,6 +59,7 @@ class ConcentrationAnalysisFaceProcessor(
     val isFaceDetected = MutableLiveData<Boolean>(false)
     val isEyesOpen = MutableLiveData<Boolean?>(true)
     private var isAlertDialogShowing = false
+    var isGraphicShow = false
 
     @androidx.annotation.OptIn(androidx.camera.core.ExperimentalGetImage::class)
     override fun analyze(imageProxy: ImageProxy) {
@@ -69,6 +70,8 @@ class ConcentrationAnalysisFaceProcessor(
             if (faceDetectionDetector != null) {
                 faceDetectionDetector!!.process(image)
                     .addOnSuccessListener { faces ->
+                        setFaceDetectionGraphicOverlay(faces, image)
+
                         if (faces.size == 0) {
                             // Change state
                             isFaceDetected.value = false
@@ -107,6 +110,8 @@ class ConcentrationAnalysisFaceProcessor(
             if (faceMeshDetector != null) {
                 faceMeshDetector!!.process(image)
                     .addOnSuccessListener { faceMeshes ->
+                        setFaceMeshGraphicOverlay(faceMeshes, image)
+
                         if (faceMeshes.size == 0) {
                             // Change state
                             drowsinessDetector.resetEAR()
@@ -308,6 +313,20 @@ class ConcentrationAnalysisFaceProcessor(
             }
 
             headPoseAttentionAnalyzer.isDistracted = false
+        }
+    }
+
+    private fun setFaceDetectionGraphicOverlay(faces: List<Face>, image: InputImage) {
+        if (isGraphicShow) {
+            faceGraphicOverlay.setFace(faces)
+            faceGraphicOverlay.setTransformationInfo(image.width, image.height, image.rotationDegrees)
+        }
+    }
+
+    private fun setFaceMeshGraphicOverlay(faceMeshes: MutableList<FaceMesh>, image: InputImage) {
+        if (isGraphicShow) {
+            faceMeshGraphicOverlay.setFace(faceMeshes)
+            faceMeshGraphicOverlay.setTransformationInfo(image.width, image.height, image.rotationDegrees)
         }
     }
 

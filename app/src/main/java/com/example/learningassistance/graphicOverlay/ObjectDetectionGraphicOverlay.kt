@@ -35,7 +35,7 @@ class ObjectDetectionGraphicOverlay(
         strokeWidth = 8.0f
     }
 
-    fun setTransformationInfo(imageWidth: Int, imageHeight: Int, rotation: Int) {
+    fun setTransformationInfo(imageWidth: Int, imageHeight: Int) {
         this.setImageInfo(imageWidth, imageHeight)
 
         this.setTransformationElement()

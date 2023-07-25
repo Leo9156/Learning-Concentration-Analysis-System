@@ -102,4 +102,6 @@
     <string name="eyes_open">Eyes open</string>
     <string name="eyes_close">Eyes close</string>
     <string name="pay_attention">Pay attention</string>
+    <string name="electronic_devices_not_detected">Electronic devices: Not detected</string>
+    <string name="electronic_devices_detected">Electronic devices: %1$s</string>
 </resources>

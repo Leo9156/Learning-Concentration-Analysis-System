@@ -119,7 +119,7 @@ class ObjectDetectionProcessor(
         objectDetectionGraphicOverlay.setResult(result)
         if (input != null) {
             Log.v(TAG, "input image width: ${input.width}, input image height: ${input.height}")
-            objectDetectionGraphicOverlay.setTransformationInfo(input.width, input.height, rotation)
+            objectDetectionGraphicOverlay.setTransformationInfo(input.width, input.height)
         } else {
             Log.e(TAG, "The input image to the ObjectDetectionGraphicOverlay is null.")
         }

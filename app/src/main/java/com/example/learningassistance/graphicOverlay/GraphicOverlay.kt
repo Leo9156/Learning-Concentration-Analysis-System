@@ -86,14 +86,7 @@ open class GraphicOverlay constructor(
             // The image needs to be horizontally cropped to be displayed in this view.
             scaleFactor = height.toFloat() / imageHeight
             postScaleWidthOffset = (height.toFloat() * imageAspectRatio - width) / 2
-            Log.v("GraphicOverlay", "height: " + height.toFloat())
-            Log.v("GraphicOverlay", "width: " + width.toFloat())
-            Log.v("GraphicOverlay", "imageAspectRatio: $imageAspectRatio")
         }
-
-        Log.v("GraphicOverlay", "scale: $scaleFactor")
-        Log.v("GraphicOverlay", "postHeight: $postScaleHeightOffset")
-        Log.v("GraphicOverlay", "postWidth: $postScaleWidthOffset")
 
         transformationMatrix.reset()
         transformationMatrix.setScale(scaleFactor, scaleFactor)

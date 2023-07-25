@@ -8,6 +8,7 @@ import android.util.Log
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
 import androidx.lifecycle.MutableLiveData
+import com.example.learningassistance.graphicOverlay.ObjectDetectionGraphicOverlay
 import com.example.learningassistance.objectdetection.ObjectDetectionProcessor
 import com.google.mediapipe.framework.image.BitmapImageBuilder
 import com.google.mediapipe.framework.image.MPImage
@@ -16,9 +17,13 @@ import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.google.mediapipe.tasks.vision.objectdetector.ObjectDetector
 import com.google.mediapipe.tasks.vision.objectdetector.ObjectDetectorResult
 
-class ConcentrationAnalysisObjectProcessor(private val context: Context) : ImageAnalysis.Analyzer {
+class ConcentrationAnalysisObjectProcessor(
+    private val context: Context,
+    private val objectDetectionGraphicOverlay: ObjectDetectionGraphicOverlay
+    ) : ImageAnalysis.Analyzer {
     // state
     val isElectronicDevicesDetected = MutableLiveData<String>("")
+    var isGraphicShow = false
 
     // detector
     private val options = ObjectDetector.ObjectDetectorOptions.builder()
@@ -80,14 +85,21 @@ class ConcentrationAnalysisObjectProcessor(private val context: Context) : Image
 
     private fun returnLiveStreamResult(result: ObjectDetectorResult?, input: MPImage?) {
         if (result == null) {
-            isElectronicDevicesDetected.value = ""
+            Log.v(TAG, "no detected")
+            isElectronicDevicesDetected.postValue("")
         } else {
             val finishTimeMs = SystemClock.uptimeMillis()
             val inferenceTime = finishTimeMs - result.timestampMs()
 
+            setObjectDetectionGraphicOverlay(result, input)
+
             result.let {
-                for (detection in it.detections()) {
-                    isElectronicDevicesDetected.value = detection.categories()[0].categoryName()
+                if (it.detections().size == 0) {
+                    isElectronicDevicesDetected.postValue("")
+                } else {
+                    for (detection in it.detections()) {
+                        isElectronicDevicesDetected.postValue(detection.categories()[0].categoryName())
+                    }
                 }
             }
         }
@@ -95,6 +107,17 @@ class ConcentrationAnalysisObjectProcessor(private val context: Context) : Image
 
     private fun returnLiveStreamError() {
         Log.e(TAG, "Object detector failed.")
+    }
+
+    private fun setObjectDetectionGraphicOverlay(result: ObjectDetectorResult, input: MPImage?) {
+        if (isGraphicShow) {
+            objectDetectionGraphicOverlay.setResult(result)
+            if (input != null) {
+                objectDetectionGraphicOverlay.setTransformationInfo(input.width, input.height)
+            } else {
+                Log.e(TAG, "The input image to the ObjectDetectionGraphicOverlay is null.")
+            }
+        }
     }
 
     fun start() {

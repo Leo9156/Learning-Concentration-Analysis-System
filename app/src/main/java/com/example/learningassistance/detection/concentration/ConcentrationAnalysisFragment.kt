@@ -58,13 +58,21 @@ class ConcentrationAnalysisFragment : Fragment() {
         // Initialize face processors
         if (concentrationAnalysisFaceProcessor == null) {
             concentrationAnalysisFaceProcessor =
-                ConcentrationAnalysisFaceProcessor(safeContext, headEulerOffsetX, headEulerOffsetY)
+                ConcentrationAnalysisFaceProcessor(
+                    safeContext,
+                    headEulerOffsetX,
+                    headEulerOffsetY,
+                    binding.faceDetectionGraphicOverlay,
+                    binding.faceMeshGraphicOverlay)
         }
         concentrationAnalysisFaceProcessor!!.start()
 
         // Initialize object processor
-
-
+        if (concentrationAnalysisObjectProcessor == null) {
+            concentrationAnalysisObjectProcessor =
+                ConcentrationAnalysisObjectProcessor(safeContext, binding.objectDetectionGraphicOverlay)
+        }
+        concentrationAnalysisObjectProcessor!!.start()
 
         return view
     }
@@ -150,6 +158,41 @@ class ConcentrationAnalysisFragment : Fragment() {
         })
 
         // Detection card -> electronic devices
+        concentrationAnalysisObjectProcessor!!.isElectronicDevicesDetected.observe(viewLifecycleOwner, Observer {
+            if (it == "") {
+                binding.detectionCardElectronicDevicesText.text = getString(R.string.electronic_devices_not_detected)
+                binding.detectionCardElectronicDevicesText.setTextColor(ContextCompat.getColor(safeContext, R.color.green))
+                binding.detectionCardElectronicDevicesIcon.setImageResource(R.drawable.ic_cellphone_green)
+            } else {
+                binding.detectionCardElectronicDevicesText.text = String.format(getString(R.string.electronic_devices_detected), it)
+                binding.detectionCardElectronicDevicesText.setTextColor(ContextCompat.getColor(safeContext, R.color.red))
+                binding.detectionCardElectronicDevicesIcon.setImageResource(R.drawable.ic_cellphone_red)
+            }
+        })
+
+        // Setting switch
+        binding.detectionGraphicSettingSwitch.setOnCheckedChangeListener { buttonView, isChecked ->
+            concentrationAnalysisFaceProcessor!!.isGraphicShow = isChecked
+            concentrationAnalysisObjectProcessor!!.isGraphicShow = isChecked
+
+            if (isChecked) {
+                binding.faceDetectionGraphicOverlay.visibility = View.VISIBLE
+                binding.faceMeshGraphicOverlay.visibility = View.VISIBLE
+                binding.objectDetectionGraphicOverlay.visibility = View.VISIBLE
+
+            } else {
+                binding.faceDetectionGraphicOverlay.visibility = View.GONE
+                binding.faceMeshGraphicOverlay.visibility = View.GONE
+                binding.objectDetectionGraphicOverlay.visibility = View.GONE
+            }
+        }
+        binding.detectionResultSettingSwitch.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                binding.detectionInfoCard.visibility = View.GONE
+            } else {
+                binding.detectionInfoCard.visibility = View.VISIBLE
+            }
+        }
     }
 
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
@@ -182,7 +225,7 @@ class ConcentrationAnalysisFragment : Fragment() {
             // Select back camera as a default
             val cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
 
-            // Preview usecase
+            // Preview use case
             val preview = Preview.Builder()
                 .build()
                 .also {
@@ -202,15 +245,19 @@ class ConcentrationAnalysisFragment : Fragment() {
                 cameraExecutor,
                 concentrationAnalysisFaceProcessor!!
             )
-
-            /*imageAnalysisRGB.setAnalyzer(
+            imageAnalysisRGB.setAnalyzer(
                 cameraExecutor,
                 concentrationAnalysisObjectProcessor!!
-            )*/
+            )
 
             try {
                 cameraProvider.unbindAll()
-                cameraProvider.bindToLifecycle(this, cameraSelector, imageAnalysisYUV/*, imageAnalysisRGB*/, preview)
+                cameraProvider.bindToLifecycle(
+                    this,
+                    cameraSelector,
+                    imageAnalysisYUV,
+                    imageAnalysisRGB,
+                    preview)
             } catch (exc: Exception) {
                 Log.e(TAG, "Use case binding failed")
             }
@@ -220,6 +267,7 @@ class ConcentrationAnalysisFragment : Fragment() {
     override fun onPause() {
         super.onPause()
         concentrationAnalysisFaceProcessor!!.close()
+        concentrationAnalysisObjectProcessor!!.close()
     }
 
     override fun onDestroyView() {
