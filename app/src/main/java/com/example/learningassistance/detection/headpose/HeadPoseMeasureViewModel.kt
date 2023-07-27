@@ -5,7 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 
 class HeadPoseMeasureViewModel(
-    private val headPoseFaceDetectionProcessor: HeadPoseFaceDetectionProcessor
+    private var headPoseFaceDetectionProcessor: HeadPoseFaceDetectionProcessor
     ) : ViewModel() {
 
     // The state of analysis
@@ -95,6 +95,10 @@ class HeadPoseMeasureViewModel(
         headPoseFaceDetectionProcessor.isAnalysisStarting = false
         headPoseFaceDetectionProcessor.resetProperties()
         headPoseFaceDetectionProcessor.hasToRestart.value = false
+    }
+
+    fun updateProcessor(newProcessor: HeadPoseFaceDetectionProcessor) {
+        this.headPoseFaceDetectionProcessor = newProcessor
     }
 
     companion object {

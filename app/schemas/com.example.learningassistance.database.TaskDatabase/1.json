@@ -1,0 +1,70 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "b344d34b6084d8264278bc6ede4aa56c",
+    "entities": [
+      {
+        "tableName": "task_table",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`task_id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `task_name` TEXT NOT NULL, `task_description` TEXT NOT NULL, `task_duration` INTEGER NOT NULL, `task_date` TEXT NOT NULL, `task_done` INTEGER NOT NULL, `task_complete_percentage` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "taskId",
+            "columnName": "task_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "taskName",
+            "columnName": "task_name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "taskDescription",
+            "columnName": "task_description",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "taskDurationMin",
+            "columnName": "task_duration",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "taskDate",
+            "columnName": "task_date",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "taskDone",
+            "columnName": "task_done",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "taskCompletePercentage",
+            "columnName": "task_complete_percentage",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "task_id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b344d34b6084d8264278bc6ede4aa56c')"
+    ]
+  }
+}

@@ -1,6 +1,7 @@
 package com.example.learningassistance.detection.concentration
 
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
@@ -15,7 +16,11 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
+import com.example.learningassistance.MainActivity
 import com.example.learningassistance.R
+import com.example.learningassistance.database.TaskDatabase
 import com.example.learningassistance.databinding.FragmentConcentrationAnalysisBinding
 import java.util.concurrent.Executors
 
@@ -73,6 +78,20 @@ class ConcentrationAnalysisFragment : Fragment() {
                 ConcentrationAnalysisObjectProcessor(safeContext, binding.objectDetectionGraphicOverlay)
         }
         concentrationAnalysisObjectProcessor!!.start()
+
+        // Initialize the dao interface of the task database
+        val application = requireActivity().application
+        val dao = TaskDatabase.getInstance(application).taskDao
+
+        // Create the view model
+        if (concentrationAnalysisViewModel == null) {
+            val taskId = requireActivity().intent.extras!!.getLong("taskId")
+            val concentrationAnalysisViewModelFactory = ConcentrationAnalysisViewModelFactory(dao, taskId)
+            concentrationAnalysisViewModel = ViewModelProvider(
+                requireActivity(),
+                concentrationAnalysisViewModelFactory
+            ).get(ConcentrationAnalysisViewModel::class.java)
+        }
 
         return view
     }
@@ -171,7 +190,7 @@ class ConcentrationAnalysisFragment : Fragment() {
         })
 
         // Setting switch
-        binding.detectionGraphicSettingSwitch.setOnCheckedChangeListener { buttonView, isChecked ->
+        binding.detectionGraphicSettingSwitch.setOnCheckedChangeListener { _, isChecked ->
             concentrationAnalysisFaceProcessor!!.isGraphicShow = isChecked
             concentrationAnalysisObjectProcessor!!.isGraphicShow = isChecked
 
@@ -193,6 +212,74 @@ class ConcentrationAnalysisFragment : Fragment() {
                 binding.detectionInfoCard.visibility = View.VISIBLE
             }
         }
+
+        // Timer
+        concentrationAnalysisViewModel!!.task.observe(viewLifecycleOwner, Observer {
+            concentrationAnalysisViewModel!!.isTimerShouldStart.value = it != null
+        })
+        concentrationAnalysisViewModel!!.isTimerShouldStart.observe(viewLifecycleOwner, Observer {
+            if (it) {
+                concentrationAnalysisViewModel!!.setTimerTime()
+                concentrationAnalysisViewModel!!.startTimer()
+            } else {
+                Log.v(TAG, "Hey")
+                concentrationAnalysisViewModel!!.stopTimer()
+            }
+        })
+        concentrationAnalysisViewModel!!.timeLeftMs.observe(viewLifecycleOwner, Observer {
+            if (it != null) {
+                val hr = (it / (1000 * 3600)).toInt()
+                val min = ((it / (1000 * 60)) % 60).toInt()
+                val sec = ((it / 1000) % 60).toInt()
+                binding.detectionTimer.text = String.format(getString(R.string.detection_timer), hr, min, sec)
+            }
+        })
+
+        // Restart head pose button
+        binding.restartHeadPoseBtn.setOnClickListener {
+            this.findNavController().navigate(R.id.action_concentrationAnalysisFragment_to_headPoseMeasureFragment)
+        }
+
+        // Three control button
+        binding.detectionPause.setOnClickListener {
+            concentrationAnalysisViewModel!!.isPaused.value = true
+            binding.detectionPlay.isClickable = true
+            binding.detectionPause.isClickable = false
+        }
+        binding.detectionPlay.setOnClickListener {
+            concentrationAnalysisViewModel!!.isPaused.value = false
+            binding.detectionPlay.isClickable = false
+            binding.detectionPause.isClickable = true
+        }
+        binding.detectionStop.setOnClickListener {
+            concentrationAnalysisViewModel!!.isTimerShouldStart.value = false
+            val intent = Intent(safeContext, MainActivity::class.java)
+            startActivity(intent)
+        }
+        concentrationAnalysisViewModel!!.isPaused.observe(viewLifecycleOwner, Observer {
+            if (it) {
+                // Close the models
+                concentrationAnalysisFaceProcessor!!.close()
+                cameraExecutor.execute {
+                    concentrationAnalysisObjectProcessor!!.close()
+                }
+                // pause the camera
+                cameraProvider.unbindAll()
+                // Stop the timer
+                concentrationAnalysisViewModel!!.isTimerShouldStart.value = false
+            } else {
+                // Start the models
+                Log.v(TAG, "hello")
+                concentrationAnalysisFaceProcessor!!.start()
+                concentrationAnalysisObjectProcessor!!.start()
+                // continue the camera
+                startCamera()
+                // Start the timer
+                if (concentrationAnalysisViewModel!!.task.value != null) {
+                    concentrationAnalysisViewModel!!.isTimerShouldStart.value = true
+                }
+            }
+        })
     }
 
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
@@ -261,13 +348,32 @@ class ConcentrationAnalysisFragment : Fragment() {
             } catch (exc: Exception) {
                 Log.e(TAG, "Use case binding failed")
             }
+
+            //bindCamera()
+
         }, ContextCompat.getMainExecutor(safeContext))
     }
 
     override fun onPause() {
         super.onPause()
         concentrationAnalysisFaceProcessor!!.close()
-        concentrationAnalysisObjectProcessor!!.close()
+        cameraExecutor.execute {
+            concentrationAnalysisObjectProcessor!!.close()
+        }
+        concentrationAnalysisViewModel!!.isTimerShouldStart.value = false
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (!concentrationAnalysisViewModel!!.isPaused.value!!) {
+            concentrationAnalysisFaceProcessor!!.start()
+            concentrationAnalysisObjectProcessor!!.start()
+            if (concentrationAnalysisViewModel!!.task.value != null) {
+                concentrationAnalysisViewModel!!.isTimerShouldStart.value = true
+            }
+        }
+        concentrationAnalysisFaceProcessor!!.headEulerOffsetX = ConcentrationAnalysisFragmentArgs.fromBundle(requireArguments()).basicHeadPoseOffsetX
+        concentrationAnalysisFaceProcessor!!.headEulerOffsetY = ConcentrationAnalysisFragmentArgs.fromBundle(requireArguments()).basicHeadPoseOffsetY
     }
 
     override fun onDestroyView() {

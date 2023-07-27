@@ -41,7 +41,7 @@ class HeadPoseMeasureFragment : Fragment() {
     private lateinit var cameraExecutor: ExecutorService
 
     // Face detection processor
-    private val headPoseFaceDetectionProcessor = HeadPoseFaceDetectionProcessor()
+    private lateinit var headPoseFaceDetectionProcessor: HeadPoseFaceDetectionProcessor
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -56,14 +56,15 @@ class HeadPoseMeasureFragment : Fragment() {
         _binding = FragmentHeadPoseMeasureBinding.inflate(inflater, container, false)
         val view = binding.root
 
-        // Initialize the face detector
-        headPoseFaceDetectionProcessor.start()
-
         return view
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        // Initialize the face detector
+        headPoseFaceDetectionProcessor = HeadPoseFaceDetectionProcessor()
+        headPoseFaceDetectionProcessor.start()
 
         val headPoseMeasureViewModelFactory = HeadPoseMeasureViewModelFactory(headPoseFaceDetectionProcessor)
 
@@ -74,6 +75,9 @@ class HeadPoseMeasureFragment : Fragment() {
                 headPoseMeasureViewModelFactory
             ).get(HeadPoseMeasureViewModel::class.java)
         }
+
+        // Need to update the processor because when navigating from concentration fragment
+        headPoseViewModel!!.updateProcessor(headPoseFaceDetectionProcessor)
 
         if (allPermissionsGranted()) {
             // Start the camera
@@ -194,6 +198,8 @@ class HeadPoseMeasureFragment : Fragment() {
                         headPoseFaceDetectionProcessor.headEulerXOffset,
                         headPoseFaceDetectionProcessor.headEulerYOffset
                     )
+                Log.v(TAG, "x: ${headPoseFaceDetectionProcessor.headEulerXOffset}")
+                Log.v(TAG, "y: ${headPoseFaceDetectionProcessor.headEulerYOffset}")
                 this.findNavController().navigate(action)
             }
         })

@@ -22,7 +22,7 @@ interface TaskDao {
     fun getAll(): LiveData<List<Task>>
 
     @Query("SELECT * FROM task_table WHERE task_id == :id")
-    fun get(id: Long): LiveData<Task>
+    suspend fun get(id: Long): Task
 
     @Query("DELETE FROM task_table")
     suspend fun deleteAll()

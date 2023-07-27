@@ -1,0 +1,77 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 2,
+    "identityHash": "014dda254fc96b542b6dae4983fb1948",
+    "entities": [
+      {
+        "tableName": "task_table",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`task_id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `task_name` TEXT NOT NULL, `task_description` TEXT NOT NULL, `task_duration` INTEGER NOT NULL, `task_time_left` INTEGER NOT NULL DEFAULT 0, `task_date` TEXT NOT NULL, `task_done` INTEGER NOT NULL, `task_complete_percentage` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "taskId",
+            "columnName": "task_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "taskName",
+            "columnName": "task_name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "taskDescription",
+            "columnName": "task_description",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "taskDurationMin",
+            "columnName": "task_duration",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "taskTimeLeftMs",
+            "columnName": "task_time_left",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "taskDate",
+            "columnName": "task_date",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "taskDone",
+            "columnName": "task_done",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "taskCompletePercentage",
+            "columnName": "task_complete_percentage",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "task_id"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '014dda254fc96b542b6dae4983fb1948')"
+    ]
+  }
+}

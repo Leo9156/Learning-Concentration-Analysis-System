@@ -27,5 +27,8 @@
         <argument
             android:name="basicHeadPoseOffsetY"
             app:argType="float" />
+        <action
+            android:id="@+id/action_concentrationAnalysisFragment_to_headPoseMeasureFragment"
+            app:destination="@id/headPoseMeasureFragment" />
     </fragment>
 </navigation>

@@ -26,8 +26,8 @@ import com.google.mlkit.vision.facemesh.FaceMeshDetectorOptions
 
 class ConcentrationAnalysisFaceProcessor(
     private val context: Context,
-    private val headEulerOffsetX: Float,
-    private val headEulerOffsetY: Float,
+    var headEulerOffsetX: Float,
+    var headEulerOffsetY: Float,
     private val faceGraphicOverlay: FaceDetectionGraphicOverlay,
     private val faceMeshGraphicOverlay: FaceMeshGraphicOverlay
     ) : ImageAnalysis.Analyzer {
@@ -132,6 +132,7 @@ class ConcentrationAnalysisFaceProcessor(
             } else {
                 imageProxy.close()
             }
+            //mediaImage.close()
         }
     }
 

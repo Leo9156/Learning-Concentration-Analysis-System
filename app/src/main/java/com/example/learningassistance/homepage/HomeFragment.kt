@@ -56,9 +56,9 @@ class HomeFragment : Fragment() {
                 this.findNavController().navigate(action)*/
                 //this.findNavController().navigate(R.id.action_homeFragment_to_cameraPreviewFragment)
                 val intent = Intent(requireContext(), DetectionActivity::class.java)
-                /*val bundle = Bundle()
-                bundle.putInt("LEARNING_TIME", task.taskDurationMin)
-                intent.putExtras(bundle)*/
+                val bundle = Bundle()
+                bundle.putLong("taskId", task.taskId)
+                intent.putExtras(bundle)
                 startActivity(intent)
         })
         binding.taskRecyclerView.adapter = adapter

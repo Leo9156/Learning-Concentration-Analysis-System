@@ -94,6 +94,10 @@ class HeadPoseFaceDetectionProcessor: ImageAnalysis.Analyzer {
         sumOfHeadEulerX += rotX.value ?: 0f
         sumOfHeadEulerY += rotY.value ?: 0f
         totalFrame++
+        Log.v(TAG, "sumx: $sumOfHeadEulerX")
+        Log.v(TAG, "sumy: $sumOfHeadEulerY")
+        Log.v(TAG, "sumframe: $totalFrame")
+
     }
 
     fun calculateBasicHeadEulerAngle() {

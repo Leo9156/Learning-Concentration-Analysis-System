@@ -129,6 +129,7 @@ class ConcentrationAnalysisObjectProcessor(
     fun close() {
         if (objectDetector != null) {
             objectDetector!!.close()
+            objectDetector = null
         }
     }
 

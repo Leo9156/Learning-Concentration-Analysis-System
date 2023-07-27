@@ -13,6 +13,7 @@ class TaskViewModel(val dao: TaskDao) : ViewModel() {
     var newTaskName = ""
     var newTaskDescription = ""
     var newTaskDuration = 0
+    var newTaskTimeLeft = 0
     private val newTaskCurrentDate = LocalDate.now().toString()
     var newTaskCompletePercentage = 0
     var newTaskDone = false
@@ -30,7 +31,7 @@ class TaskViewModel(val dao: TaskDao) : ViewModel() {
             task.taskName = newTaskName
             task.taskDescription = newTaskDescription
             task.taskDurationMin = newTaskDuration
-            //task.taskTimeLeft = newTaskDuration
+            task.taskTimeLeftMs = (task.taskDurationMin * 60000).toLong()
             task.taskDate = newTaskCurrentDate
 
             // Insert the new task into task table
