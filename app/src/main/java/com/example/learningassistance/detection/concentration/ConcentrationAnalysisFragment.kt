@@ -3,6 +3,7 @@ package com.example.learningassistance.detection.concentration
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.media.MediaPlayer
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -60,25 +61,6 @@ class ConcentrationAnalysisFragment : Fragment() {
         val headEulerOffsetX = ConcentrationAnalysisFragmentArgs.fromBundle(requireArguments()).basicHeadPoseOffsetX
         val headEulerOffsetY = ConcentrationAnalysisFragmentArgs.fromBundle(requireArguments()).basicHeadPoseOffsetY
 
-        // Initialize face processors
-        if (concentrationAnalysisFaceProcessor == null) {
-            concentrationAnalysisFaceProcessor =
-                ConcentrationAnalysisFaceProcessor(
-                    safeContext,
-                    headEulerOffsetX,
-                    headEulerOffsetY,
-                    binding.faceDetectionGraphicOverlay,
-                    binding.faceMeshGraphicOverlay)
-        }
-        concentrationAnalysisFaceProcessor!!.start()
-
-        // Initialize object processor
-        if (concentrationAnalysisObjectProcessor == null) {
-            concentrationAnalysisObjectProcessor =
-                ConcentrationAnalysisObjectProcessor(safeContext, binding.objectDetectionGraphicOverlay)
-        }
-        concentrationAnalysisObjectProcessor!!.start()
-
         // Initialize the dao interface of the task database
         val application = requireActivity().application
         val dao = TaskDatabase.getInstance(application).taskDao
@@ -92,6 +74,29 @@ class ConcentrationAnalysisFragment : Fragment() {
                 concentrationAnalysisViewModelFactory
             ).get(ConcentrationAnalysisViewModel::class.java)
         }
+
+        // Initialize face processors
+        if (concentrationAnalysisFaceProcessor == null) {
+            concentrationAnalysisFaceProcessor =
+                ConcentrationAnalysisFaceProcessor(
+                    safeContext,
+                    headEulerOffsetX,
+                    headEulerOffsetY,
+                    binding.faceDetectionGraphicOverlay,
+                    binding.faceMeshGraphicOverlay,
+                    concentrationAnalysisViewModel!!)
+        }
+        concentrationAnalysisFaceProcessor!!.start()
+
+        // Initialize object processor
+        if (concentrationAnalysisObjectProcessor == null) {
+            concentrationAnalysisObjectProcessor =
+                ConcentrationAnalysisObjectProcessor(
+                    safeContext,
+                    binding.objectDetectionGraphicOverlay,
+                concentrationAnalysisViewModel!!)
+        }
+        concentrationAnalysisObjectProcessor!!.start()
 
         return view
     }
@@ -221,8 +226,8 @@ class ConcentrationAnalysisFragment : Fragment() {
             if (it) {
                 concentrationAnalysisViewModel!!.setTimerTime()
                 concentrationAnalysisViewModel!!.startTimer()
+                concentrationAnalysisViewModel!!.setDistractionValue()
             } else {
-                Log.v(TAG, "Hey")
                 concentrationAnalysisViewModel!!.stopTimer()
             }
         })
@@ -237,6 +242,7 @@ class ConcentrationAnalysisFragment : Fragment() {
 
         // Restart head pose button
         binding.restartHeadPoseBtn.setOnClickListener {
+            concentrationAnalysisViewModel!!.isPaused.value = null
             this.findNavController().navigate(R.id.action_concentrationAnalysisFragment_to_headPoseMeasureFragment)
         }
 
@@ -257,27 +263,49 @@ class ConcentrationAnalysisFragment : Fragment() {
             startActivity(intent)
         }
         concentrationAnalysisViewModel!!.isPaused.observe(viewLifecycleOwner, Observer {
+            if (it != null) {
+                if (it) {
+                    // Close the models
+                    concentrationAnalysisFaceProcessor!!.close()
+                    cameraExecutor.execute {
+                        concentrationAnalysisObjectProcessor!!.close()
+                    }
+                    // pause the camera
+                    cameraProvider.unbindAll()
+                    // Stop the timer
+                    concentrationAnalysisViewModel!!.isTimerShouldStart.value = false
+                } else {
+                    // Start the models
+                    concentrationAnalysisFaceProcessor!!.start()
+                    concentrationAnalysisObjectProcessor!!.start()
+                    // continue the camera
+                    startCamera()
+                    // Start the timer
+                    if (concentrationAnalysisViewModel!!.task.value != null) {
+                        concentrationAnalysisViewModel!!.isTimerShouldStart.value = true
+                    }
+                    // Reset the state
+                    concentrationAnalysisViewModel!!.isPaused.value = null
+                }
+            }
+        })
+
+        // Observe whether the task has finished
+        concentrationAnalysisViewModel!!.isFinished.observe(viewLifecycleOwner, Observer {
             if (it) {
-                // Close the models
+                // Play sound
+                val mediaPlayer = MediaPlayer.create(safeContext, R.raw.basic_head_pose_complete)
+                mediaPlayer.setOnCompletionListener {
+                    it.release()
+                }
+                mediaPlayer.start()
+
                 concentrationAnalysisFaceProcessor!!.close()
                 cameraExecutor.execute {
                     concentrationAnalysisObjectProcessor!!.close()
                 }
-                // pause the camera
-                cameraProvider.unbindAll()
-                // Stop the timer
-                concentrationAnalysisViewModel!!.isTimerShouldStart.value = false
-            } else {
-                // Start the models
-                Log.v(TAG, "hello")
-                concentrationAnalysisFaceProcessor!!.start()
-                concentrationAnalysisObjectProcessor!!.start()
-                // continue the camera
-                startCamera()
-                // Start the timer
-                if (concentrationAnalysisViewModel!!.task.value != null) {
-                    concentrationAnalysisViewModel!!.isTimerShouldStart.value = true
-                }
+                concentrationAnalysisViewModel!!.isFinished.value = false
+                this.findNavController().navigate(R.id.action_concentrationAnalysisFragment_to_analysisResultsFragment)
             }
         })
     }
@@ -348,9 +376,6 @@ class ConcentrationAnalysisFragment : Fragment() {
             } catch (exc: Exception) {
                 Log.e(TAG, "Use case binding failed")
             }
-
-            //bindCamera()
-
         }, ContextCompat.getMainExecutor(safeContext))
     }
 
@@ -365,7 +390,7 @@ class ConcentrationAnalysisFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        if (!concentrationAnalysisViewModel!!.isPaused.value!!) {
+        if (concentrationAnalysisViewModel!!.isPaused.value == null) {
             concentrationAnalysisFaceProcessor!!.start()
             concentrationAnalysisObjectProcessor!!.start()
             if (concentrationAnalysisViewModel!!.task.value != null) {

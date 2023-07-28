@@ -29,10 +29,10 @@ class HeadPoseAttentionAnalysis(
 
 
     // TODO: Temporary method to show whether the user is attentive
-    private var duration: Long = 0
+    var duration: Long = 0
     private var startTimerMs = System.currentTimeMillis()
     private var endTimerMs = System.currentTimeMillis()
-    private var perAttention = 0f
+    var perAttention = 0f
     private var inattentionThreshold = 0.3f
     private var totalFrame = 0
     private var inattentionFrame = 0
@@ -96,13 +96,8 @@ class HeadPoseAttentionAnalysis(
             if (!isAttention) {
                 inattentionFrame++
             }
-
-            Log.v("HeadPoseAttention", "isAttention $isAttention")
-
             totalAttentionFrame = 0
             totalInattentionFrame = 0
-
-            Log.v("FaceDetectionProcessor", "attention state: $isAttention")
         }
     }
 

@@ -29,5 +29,17 @@ data class Task(
     var taskDone: Boolean = false,
 
     @ColumnInfo(name = "task_complete_percentage")
-    var taskCompletePercentage: Int = 0
+    var taskCompletePercentage: Int = 0,
+
+    @ColumnInfo(name = "fatigue_time", defaultValue = "0")
+    var fatigueTimeMs: Long = 0,
+
+    @ColumnInfo(name = "no_face_time", defaultValue = "0")
+    var noFaceTimeMs: Long = 0,
+
+    @ColumnInfo(name = "look_around_time", defaultValue = "0")
+    var lookAroundTimeMs: Long = 0,
+
+    @ColumnInfo(name = "electronic_devices_time", defaultValue = "0")
+    var electronicDevicesTimeMs: Long = 0,
 )

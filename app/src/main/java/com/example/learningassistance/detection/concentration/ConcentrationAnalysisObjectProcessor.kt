@@ -9,7 +9,6 @@ import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
 import androidx.lifecycle.MutableLiveData
 import com.example.learningassistance.graphicOverlay.ObjectDetectionGraphicOverlay
-import com.example.learningassistance.objectdetection.ObjectDetectionProcessor
 import com.google.mediapipe.framework.image.BitmapImageBuilder
 import com.google.mediapipe.framework.image.MPImage
 import com.google.mediapipe.tasks.core.BaseOptions
@@ -19,17 +18,24 @@ import com.google.mediapipe.tasks.vision.objectdetector.ObjectDetectorResult
 
 class ConcentrationAnalysisObjectProcessor(
     private val context: Context,
-    private val objectDetectionGraphicOverlay: ObjectDetectionGraphicOverlay
+    private val objectDetectionGraphicOverlay: ObjectDetectionGraphicOverlay,
+    private val viewModel: ConcentrationAnalysisViewModel
     ) : ImageAnalysis.Analyzer {
     // state
     val isElectronicDevicesDetected = MutableLiveData<String>("")
     var isGraphicShow = false
+    private var isTimerStart = false
+
+    // Timer to calculate how long does the user use electronic devices
+    private var startTimer = System.currentTimeMillis()
+    private var endTimer = System.currentTimeMillis()
+    private var duration: Long = 0
 
     // detector
     private val options = ObjectDetector.ObjectDetectorOptions.builder()
         .setBaseOptions(BaseOptions.builder().setModelAssetPath("model.tflite").build())
         .setRunningMode(RunningMode.LIVE_STREAM)
-        .setMaxResults(5)
+        .setMaxResults(1)
         .setScoreThreshold(0.7f)
         .setResultListener { result, input ->
             returnLiveStreamResult(result, input)
@@ -96,9 +102,25 @@ class ConcentrationAnalysisObjectProcessor(
             result.let {
                 if (it.detections().size == 0) {
                     isElectronicDevicesDetected.postValue("")
+
+                    if (!this.isTimerStart) {
+                        this.startTimer = System.currentTimeMillis()
+                    }
+                    this.endTimer = System.currentTimeMillis()
+                    this.duration = endTimer - startTimer
+                    if (this.duration > 3000) {
+                        Log.v(TAG, "time: $duration")
+                        viewModel.electronicDevicesTime += this.duration
+                    }
+                    this.isTimerStart = false
                 } else {
                     for (detection in it.detections()) {
                         isElectronicDevicesDetected.postValue(detection.categories()[0].categoryName())
+
+                        if (!this.isTimerStart) {
+                            this.startTimer = System.currentTimeMillis()
+                            this.isTimerStart = true
+                        }
                     }
                 }
             }
@@ -130,6 +152,7 @@ class ConcentrationAnalysisObjectProcessor(
         if (objectDetector != null) {
             objectDetector!!.close()
             objectDetector = null
+            isTimerStart = false
         }
     }
 

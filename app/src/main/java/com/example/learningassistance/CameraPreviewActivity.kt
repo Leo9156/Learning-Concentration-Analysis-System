@@ -60,7 +60,6 @@ class CameraPreviewActivity : AppCompatActivity() {
         objectDetectionProcessor = ObjectDetectionProcessor(
             this,
             binding.objectDetectionGraphicOverlay,
-            binding.textViewObjectMsg,
             this)
 
         // Hide the btnRetryBasicHeadPoseMeasurement when the basic head pose is detecting

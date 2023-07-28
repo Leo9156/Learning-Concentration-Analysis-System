@@ -29,7 +29,8 @@ class ConcentrationAnalysisFaceProcessor(
     var headEulerOffsetX: Float,
     var headEulerOffsetY: Float,
     private val faceGraphicOverlay: FaceDetectionGraphicOverlay,
-    private val faceMeshGraphicOverlay: FaceMeshGraphicOverlay
+    private val faceMeshGraphicOverlay: FaceMeshGraphicOverlay,
+    private val viewModel: ConcentrationAnalysisViewModel
     ) : ImageAnalysis.Analyzer {
     // Face detector
     private val faceDetectionOptions = FaceDetectorOptions.Builder()
@@ -149,10 +150,20 @@ class ConcentrationAnalysisFaceProcessor(
         if (faceDetectionDetector != null) {
             faceDetectionDetector!!.close()
             faceDetectionDetector = null
+
+            noFaceDetector.resetDetector()
+            noFaceDetector.isNoFaceDetecting = false
+
+            headPoseAttentionAnalyzer.isHeadPoseAnalyzing = false
+            headPoseAttentionAnalyzer.resetAnalyzer()
+            headPoseAttentionAnalyzer.isDistracted = false
         }
         if (faceMeshDetector != null) {
             faceMeshDetector!!.close()
             faceMeshDetector = null
+
+            drowsinessDetector.resetDetector()
+            drowsinessDetector.isDrowsinessAnalyzing = false
         }
     }
 
@@ -190,6 +201,8 @@ class ConcentrationAnalysisFaceProcessor(
                     Toast.makeText(context, R.string.drowsiness_tired_msg, Toast.LENGTH_SHORT).show()
                 }
                 else -> {
+                    viewModel.fatigueTime += (drowsinessDetector.getDuration() * perClose).toLong()
+
                     if (!isAlertDialogShowing) {
                         isAlertDialogShowing = true
                         if (!drowsinessDetector.isAlarmPlaying()) {
@@ -244,6 +257,8 @@ class ConcentrationAnalysisFaceProcessor(
             noFaceDetector.calculatePerNoFace()
             val perNoFace = noFaceDetector.getPerNoFace()
             if (perNoFace > noFaceDetector.getSevereNoFaceThreshold()) {
+                viewModel.noFaceTime += (noFaceDetector.getDuration() * perNoFace).toLong()
+
                 if (!isAlertDialogShowing) {
                     isAlertDialogShowing = true
                     if (!noFaceDetector.isAlarmPlaying()) {
@@ -284,7 +299,7 @@ class ConcentrationAnalysisFaceProcessor(
         }
 
         if (!isFaceDetected.value!!) {
-            headPoseAttentionAnalyzer.increaseTotalInattentionFrame()
+            headPoseAttentionAnalyzer.analyzeHeadPose(0f, 0f)
         } else {
             headPoseAttentionAnalyzer.analyzeHeadPose(eulerX, eulerY)
         }
@@ -292,6 +307,8 @@ class ConcentrationAnalysisFaceProcessor(
         headPoseAttentionAnalyzer.analyzeAttentiveness()
 
         if (headPoseAttentionAnalyzer.isDistracted) {
+            viewModel.lookAroundTime += (headPoseAttentionAnalyzer.duration * headPoseAttentionAnalyzer.perAttention).toLong()
+
             if (!isAlertDialogShowing) {
                 isAlertDialogShowing = true
                 val alertDialog = MaterialAlertDialogBuilder(context)

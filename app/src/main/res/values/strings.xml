@@ -104,4 +104,6 @@
     <string name="pay_attention">Pay attention</string>
     <string name="electronic_devices_not_detected">Electronic devices: Not detected</string>
     <string name="electronic_devices_detected">Electronic devices: %1$s</string>
+    <string name="analysis_result">Analysis Result</string>
+    <string name="back_to_home_page">Back to home page</string>
 </resources>

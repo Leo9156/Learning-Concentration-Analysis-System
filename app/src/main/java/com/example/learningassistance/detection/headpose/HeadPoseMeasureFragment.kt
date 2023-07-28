@@ -183,7 +183,7 @@ class HeadPoseMeasureFragment : Fragment() {
         headPoseViewModel!!.isAnalysisFinished.observe(viewLifecycleOwner, Observer {
             if (it) {
                 // Play the sound
-                val mediaPlayer = MediaPlayer.create(safeContext, R.raw.head_pose_complete)
+                val mediaPlayer = MediaPlayer.create(safeContext, R.raw.basic_head_pose_complete)
                 mediaPlayer.setOnCompletionListener {
                     it.release()
                 }
@@ -198,8 +198,6 @@ class HeadPoseMeasureFragment : Fragment() {
                         headPoseFaceDetectionProcessor.headEulerXOffset,
                         headPoseFaceDetectionProcessor.headEulerYOffset
                     )
-                Log.v(TAG, "x: ${headPoseFaceDetectionProcessor.headEulerXOffset}")
-                Log.v(TAG, "y: ${headPoseFaceDetectionProcessor.headEulerYOffset}")
                 this.findNavController().navigate(action)
             }
         })

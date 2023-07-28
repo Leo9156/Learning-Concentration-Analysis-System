@@ -287,21 +287,6 @@ class DrowsinessDetection(private val context: Context) {
         var b = calculateDistance(allPoints[160].position, allPoints[144].position)
         var c = calculateDistance(allPoints[158].position, allPoints[153].position)
 
-        //Log.v("FaceDetectionProcessor", "origin right A: $a")
-        //Log.v("FaceDetectionProcessor", "origin right B: $b")
-        //Log.v("FaceDetectionProcessor", "origin right C: $c")
-
-//        a *= 0.5f * abs(cos(rotY))
-//        b *= 0.5f * sqrt(1 - (sin(rotX) * sin(rotX)) * (cos(rotY) * cos(rotY)))
-//        c *= 0.5f * sqrt(1 - (sin(rotX) * sin(rotX)) * (cos(rotY) * cos(rotY)))
-
-        //Log.v("FaceDetectionProcessor", "formula1: ${abs(cos(rotY))}")
-        //Log.v("FaceDetectionProcessor", "formula2: ${sqrt(1 - (sin(rotX) * sin(rotX)) * (cos(rotY) * cos(rotY)))}")
-
-        //Log.v("FaceDetectionProcessor", "right A: $a")
-        //Log.v("FaceDetectionProcessor", "right B: $b")
-        //Log.v("FaceDetectionProcessor", "right C: $c")
-
         return (b + c) / (2 * a)
     }
 
@@ -309,25 +294,6 @@ class DrowsinessDetection(private val context: Context) {
         var a = calculateDistance(allPoints[362].position, allPoints[263].position)
         var b = calculateDistance(allPoints[385].position, allPoints[380].position)
         var c = calculateDistance(allPoints[387].position, allPoints[373].position)
-
-//        Log.v("FaceDetectionProcessor", "origin left A: $a")
-//        Log.v("FaceDetectionProcessor", "origin left B: $b")
-//        Log.v("FaceDetectionProcessor", "origin left C: $c")
-
-
-//        a *= abs(cos(rotX))
-//        b *= sqrt(1 - (sin(rotY) * sin(rotY)) * (cos(rotX) * cos(rotX)))
-//        c *= sqrt(1 - (sin(rotY) * sin(rotY)) * (cos(rotX) * cos(rotX)))
-
-//        Log.v("FaceDetectionProcessor", "rotx: ${rotX}")
-//        Log.v("FaceDetectionProcessor", "roty: ${rotY}")
-//
-//        Log.v("FaceDetectionProcessor", "formula1: ${abs(cos(rotY))}")
-//        Log.v("FaceDetectionProcessor", "formula2: ${sqrt(1 - (sin(rotX) * sin(rotX)) * (cos(rotY) * cos(rotY)))}")
-//
-//        Log.v("FaceDetectionProcessor", "left A: $a")
-//        Log.v("FaceDetectionProcessor", "left B: $b")
-//        Log.v("FaceDetectionProcessor", "left C: $c")
 
         return (b + c) / (2 * a)
     }

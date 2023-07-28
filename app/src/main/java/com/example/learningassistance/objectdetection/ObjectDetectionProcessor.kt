@@ -20,9 +20,8 @@ import com.google.mediapipe.tasks.vision.objectdetector.ObjectDetector.ObjectDet
 import com.google.mediapipe.tasks.vision.objectdetector.ObjectDetectorResult
 
 class ObjectDetectionProcessor(
-    private val context: Context,
+    context: Context,
     private val objectDetectionGraphicOverlay: ObjectDetectionGraphicOverlay,
-    private val textViewObjectMsg: TextView,
     private val cameraPreviewActivity: CameraPreviewActivity,
     ): ImageAnalysis.Analyzer {
 
@@ -101,7 +100,6 @@ class ObjectDetectionProcessor(
             result.let {
                 for (detection in it.detections()) {
                     val objectDetectionMessage = "category: ${detection.categories()[0].categoryName()}, score: ${detection.categories()[0].score()}"
-                    cameraPreviewActivity.setObjectDetectionMessageTextView(objectDetectionMessage)
 
                     Log.v(TAG, "Object detected: ${detection.categories()[0].categoryName()}")
                     Log.v(TAG, "score: ${detection.categories()[0].score()}")

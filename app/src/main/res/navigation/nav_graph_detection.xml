@@ -29,6 +29,18 @@
             app:argType="float" />
         <action
             android:id="@+id/action_concentrationAnalysisFragment_to_headPoseMeasureFragment"
-            app:destination="@id/headPoseMeasureFragment" />
+            app:destination="@id/headPoseMeasureFragment"
+            app:popUpTo="@id/nav_graph_detection"
+            app:popUpToInclusive="true"/>
+        <action
+            android:id="@+id/action_concentrationAnalysisFragment_to_analysisResultsFragment"
+            app:destination="@id/analysisResultsFragment"
+            app:popUpTo="@id/nav_graph_detection"
+            app:popUpToInclusive="true"/>
     </fragment>
+    <fragment
+        android:id="@+id/analysisResultsFragment"
+        android:name="com.example.learningassistance.detection.result.AnalysisResultsFragment"
+        android:label="fragment_analysis_results"
+        tools:layout="@layout/fragment_analysis_results" />
 </navigation>

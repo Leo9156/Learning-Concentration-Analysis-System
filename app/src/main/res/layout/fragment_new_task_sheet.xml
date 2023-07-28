@@ -76,8 +76,7 @@
             android:layout_height="100dp"
             android:hint="@string/description"
             android:scrollbars="vertical"
-            android:imeOptions="actionDone"
-            android:inputType="textMultiLine" />
+            android:imeOptions="actionDone" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <TextView
