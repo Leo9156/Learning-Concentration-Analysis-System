@@ -19,17 +19,24 @@ import com.google.mediapipe.tasks.vision.objectdetector.ObjectDetectorResult
 class ConcentrationAnalysisObjectProcessor(
     private val context: Context,
     private val objectDetectionGraphicOverlay: ObjectDetectionGraphicOverlay,
-    private val viewModel: ConcentrationAnalysisViewModel
     ) : ImageAnalysis.Analyzer {
     // state
     val isElectronicDevicesDetected = MutableLiveData<String>("")
     var isGraphicShow = false
     private var isTimerStart = false
+    var isObjectDetectionShouldStart = false
 
     // Timer to calculate how long does the user use electronic devices
     private var startTimer = System.currentTimeMillis()
     private var endTimer = System.currentTimeMillis()
     private var duration: Long = 0
+
+    //
+    private var windowSize = 10
+    private var totalFrame = 0
+    private var totalDetectedFrame = 0
+    private var detectedFrame = 0
+    private var notDetectedFrame = 0
 
     // detector
     private val options = ObjectDetector.ObjectDetectorOptions.builder()
@@ -110,7 +117,7 @@ class ConcentrationAnalysisObjectProcessor(
                     this.duration = endTimer - startTimer
                     if (this.duration > 3000) {
                         Log.v(TAG, "time: $duration")
-                        viewModel.electronicDevicesTime += this.duration
+                        //viewModel.electronicDevicesTime += this.duration
                     }
                     this.isTimerStart = false
                 } else {
@@ -123,8 +130,41 @@ class ConcentrationAnalysisObjectProcessor(
                         }
                     }
                 }
+
+                electDevDetection()
             }
         }
+    }
+
+    private fun electDevDetection() {
+        if (isObjectDetectionShouldStart) {
+            totalFrame++
+
+            if (isElectronicDevicesDetected.value != "") {
+                detectedFrame++
+            } else {
+                notDetectedFrame++
+            }
+
+            if (detectedFrame + notDetectedFrame == windowSize) {
+                if (detectedFrame > notDetectedFrame) {
+                    totalDetectedFrame += detectedFrame
+                }
+                notDetectedFrame = 0
+                detectedFrame = 0
+            }
+        }
+    }
+
+    fun calculatePerDetected(): Float {
+        return totalDetectedFrame.toFloat() / totalFrame.toFloat()
+    }
+
+    fun resetDetector() {
+        totalFrame = 0
+        totalDetectedFrame = 0
+        notDetectedFrame = 0
+        detectedFrame = 0
     }
 
     private fun returnLiveStreamError() {

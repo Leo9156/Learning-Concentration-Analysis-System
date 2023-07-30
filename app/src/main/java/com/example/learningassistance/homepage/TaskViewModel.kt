@@ -22,7 +22,7 @@ class TaskViewModel(val dao: TaskDao) : ViewModel() {
     var totalTasksCount = MutableLiveData<Int>(-1)
 
     // All the tasks in the task table
-    val tasks = dao.getAll()
+    val tasks = dao.getAllNotYetDone()
 
     fun addTask() {
         viewModelScope.launch {

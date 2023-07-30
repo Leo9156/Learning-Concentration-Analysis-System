@@ -33,17 +33,9 @@ class HeadPoseAttentionAnalysis(
     private var startTimerMs = System.currentTimeMillis()
     private var endTimerMs = System.currentTimeMillis()
     var perAttention = 0f
-    private var inattentionThreshold = 0.3f
-    private var totalFrame = 0
-    private var inattentionFrame = 0
-
-    fun setSlidingWindowSize(size: Int) {
-        this.slidingWindowSize = size
-    }
-
-    fun getSlidingWindowSize(): Int {
-        return this.slidingWindowSize
-    }
+    var inattentionThreshold = 0.3f
+    var totalFrame = 0
+    var inattentionFrame = 0
 
     fun increaseTotalAttentionFrame() {
         this.totalAttentionFrame++
@@ -51,22 +43,6 @@ class HeadPoseAttentionAnalysis(
 
     fun increaseTotalInattentionFrame() {
         this.totalInattentionFrame++
-    }
-
-    fun setPositiveThresholdX(angle: Float) {
-        this.xPositiveThreshold = angle
-    }
-
-    fun setNegativeThresholdX(angle: Float) {
-        this.xNegativeThreshold = angle
-    }
-
-    fun setPositiveThresholdY(angle: Float) {
-        this.yPositiveThreshold = angle
-    }
-
-    fun setNegativeThresholdY(angle: Float) {
-        this.yNegativeThreshold = angle
     }
 
     fun isAttention(): Boolean {
@@ -109,6 +85,7 @@ class HeadPoseAttentionAnalysis(
             perAttention = inattentionFrame.toFloat() / totalFrame.toFloat()
 
             if (perAttention > inattentionThreshold) {
+
                 isDistracted = true
 
                 mediaPlayer = MediaPlayer.create(context, R.raw.attention_alarm)
@@ -122,10 +99,16 @@ class HeadPoseAttentionAnalysis(
         }
     }
 
+    fun calculatePerAttention(): Float {
+        return inattentionFrame.toFloat() / totalFrame.toFloat()
+    }
+
     fun resetAnalyzer() {
         totalFrame = 0
         inattentionFrame = 0
-        startTimerMs = System.currentTimeMillis()
+        totalAttentionFrame = 0
+        totalInattentionFrame = 0
+        isAttention = true
     }
 
     private fun resetProperties() {

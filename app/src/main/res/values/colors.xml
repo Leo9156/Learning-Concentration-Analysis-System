@@ -78,5 +78,9 @@
     <color name="md_theme_dark_onSurface">#C6C6CA</color>
     <color name="md_theme_dark_surfaceVariant">#43474E</color>
     <color name="md_theme_dark_onSurfaceVariant">#C3C6CF</color>
-    <color name="edit_pen_color">#FFC107</color>
+    <color name="pie_color_red">#FF0000</color>
+    <color name="pie_color_sec_red">#DB757C</color>
+    <color name="pie_color_orange">#EF9F58</color>
+    <color name="pie_color_yellow">#F4C354</color>
+    <color name="pie_color_green">#A4CD5A</color>
 </resources>

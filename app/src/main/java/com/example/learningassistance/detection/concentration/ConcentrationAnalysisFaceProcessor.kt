@@ -30,8 +30,8 @@ class ConcentrationAnalysisFaceProcessor(
     var headEulerOffsetY: Float,
     private val faceGraphicOverlay: FaceDetectionGraphicOverlay,
     private val faceMeshGraphicOverlay: FaceMeshGraphicOverlay,
-    private val viewModel: ConcentrationAnalysisViewModel
     ) : ImageAnalysis.Analyzer {
+
     // Face detector
     private val faceDetectionOptions = FaceDetectorOptions.Builder()
         .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
@@ -44,13 +44,13 @@ class ConcentrationAnalysisFaceProcessor(
     private var faceMeshDetector: FaceMeshDetector? = null
 
     // Drowsiness detector
-    private val drowsinessDetector = DrowsinessDetection(context)
+    val drowsinessDetector = DrowsinessDetection(context)
 
     // No face detector
-    private val noFaceDetector = NoFaceDetection(context)
+    val noFaceDetector = NoFaceDetection(context)
 
     // head pose analyzer
-    private val headPoseAttentionAnalyzer = HeadPoseAttentionAnalysis(context)
+    val headPoseAttentionAnalyzer = HeadPoseAttentionAnalysis(context)
 
     // head rotation
     val rotX = MutableLiveData<Float?>(null)
@@ -59,6 +59,9 @@ class ConcentrationAnalysisFaceProcessor(
     // Necessary states
     val isFaceDetected = MutableLiveData<Boolean>(false)
     val isEyesOpen = MutableLiveData<Boolean?>(true)
+    var isNoFaceDetectionShouldStart = false
+    var isDrowsinessDetectionShouldStart = false
+    var isHeadPoseAnalysisShouldStart = false
     private var isAlertDialogShowing = false
     var isGraphicShow = false
 
@@ -168,169 +171,42 @@ class ConcentrationAnalysisFaceProcessor(
     }
 
     private fun drowsinessDetection() {
-        // When to start timer
-        if (!drowsinessDetector.isDrowsinessAnalyzing) {
-            drowsinessDetector.isDrowsinessAnalyzing = true
-            drowsinessDetector.startDrowsinessTimer()
-        }
+        if (isDrowsinessDetectionShouldStart) {
+            drowsinessDetector.increaseTotalFrameNumber()
 
-        // Necessary steps
-        drowsinessDetector.increaseTotalFrameNumber()
-        drowsinessDetector.endDrowinessTimer()
-        drowsinessDetector.calculateDuration()
-        if (drowsinessDetector.getEAR() < drowsinessDetector.getClosedEyeThreshold()) {
-            drowsinessDetector.increaseClosedEyesFrameNumber()
-            isEyesOpen.value = false
-        } else {
-            if (drowsinessDetector.getEAR() == 2.0f) {
-                isEyesOpen.value = null
+            if (drowsinessDetector.getEAR() < drowsinessDetector.getClosedEyeThreshold()) {
+                drowsinessDetector.increaseClosedEyesFrameNumber()
+                isEyesOpen.value = false
             } else {
-                isEyesOpen.value = true
-            }
-        }
-
-        // Check whether the time had exceeded threshold
-        if (drowsinessDetector.getDuration() >= drowsinessDetector.getDetectionPeriodMs()) {
-            drowsinessDetector.calculatePerClose()
-            val perClose = drowsinessDetector.getPerClose()
-
-            when {
-                perClose <= drowsinessDetector.getAwakeThreshold() -> {
-                }
-                perClose > drowsinessDetector.getAwakeThreshold() && perClose <= drowsinessDetector.getFatigueThreshold() -> {
-                    Toast.makeText(context, R.string.drowsiness_tired_msg, Toast.LENGTH_SHORT).show()
-                }
-                else -> {
-                    viewModel.fatigueTime += (drowsinessDetector.getDuration() * perClose).toLong()
-
-                    if (!isAlertDialogShowing) {
-                        isAlertDialogShowing = true
-                        if (!drowsinessDetector.isAlarmPlaying()) {
-                            drowsinessDetector.playAlarm()
-                        }
-                        if (!drowsinessDetector.isVibrating()) {
-                            drowsinessDetector.startVibrating()
-                        }
-                        MaterialAlertDialogBuilder(context)
-                            .setTitle(R.string.warning)
-                            .setIcon(R.drawable.ic_warning)
-                            .setMessage(context.getString(R.string.drowsiness_alert_dialog_msg))
-                            .setPositiveButton(R.string.close) { dialog, _ ->
-                                if (drowsinessDetector.isAlarmPlaying()) {
-                                    drowsinessDetector.stopAlarm()
-                                }
-                                if (drowsinessDetector.isVibrating()) {
-                                    drowsinessDetector.stopVibrating()
-                                }
-                                isAlertDialogShowing = false
-                                dialog.dismiss()
-                            }
-                            .setCancelable(false)
-                            .show()
-                    }
+                if (drowsinessDetector.getEAR() == 2.0f) {
+                    isEyesOpen.value = null
+                } else {
+                    isEyesOpen.value = true
                 }
             }
-
-            drowsinessDetector.resetDetector()
         }
     }
 
     private fun noFaceDetection() {
-        // When to start timer
-        if (!noFaceDetector.isNoFaceDetecting) {
-            noFaceDetector.isNoFaceDetecting = true
-            noFaceDetector.startNoFaceTimer()
-        }
+        if (isNoFaceDetectionShouldStart) {
+            // Necessary steps
+            noFaceDetector.increaseTotalFrameNumber()
 
-        // Necessary steps
-        noFaceDetector.increaseTotalFrameNumber()
-        noFaceDetector.endNoFaceTimer()
-        noFaceDetector.calculateDuration()
-
-        // No face detection
-        if (!isFaceDetected.value!!) {
-            Log.v(TAG, "no face")
-            noFaceDetector.increaseNoFaceFrameNumber()
-        }
-
-        if (noFaceDetector.getDuration() >= noFaceDetector.getDetectionPeriodMs()) {
-            noFaceDetector.calculatePerNoFace()
-            val perNoFace = noFaceDetector.getPerNoFace()
-            if (perNoFace > noFaceDetector.getSevereNoFaceThreshold()) {
-                viewModel.noFaceTime += (noFaceDetector.getDuration() * perNoFace).toLong()
-
-                if (!isAlertDialogShowing) {
-                    isAlertDialogShowing = true
-                    if (!noFaceDetector.isAlarmPlaying()) {
-                        noFaceDetector.playAlarm()
-                    }
-                    if (!noFaceDetector.isVibrating()) {
-                        noFaceDetector.startVibrating()
-                    }
-                    MaterialAlertDialogBuilder(context)
-                        .setTitle(R.string.are_you_still_there)
-                        .setIcon(R.drawable.ic_warning)
-                        .setMessage(context.getString(R.string.no_face_alert_dialog_msg))
-                        .setPositiveButton(R.string.close) { dialog, _ ->
-                            if (noFaceDetector.isAlarmPlaying()) {
-                                noFaceDetector.stopAlarm()
-                            }
-                            if (noFaceDetector.isVibrating()) {
-                                noFaceDetector.stopVibrating()
-                            }
-                            isAlertDialogShowing = false
-                            dialog.dismiss()
-                        }
-                        .setCancelable(false)
-                        .show()
-                }
+            // No face detection
+            if (!isFaceDetected.value!!) {
+                noFaceDetector.increaseNoFaceFrameNumber()
             }
-            // Reset the variables
-            noFaceDetector.resetDetector()
         }
     }
 
     private fun headPoseAttentivenessAnalysis(eulerX: Float, eulerY: Float) {
-        headPoseAttentionAnalyzer.isAlertDialogShowing = this.isAlertDialogShowing
-
-        if (!headPoseAttentionAnalyzer.isHeadPoseAnalyzing) {
-            headPoseAttentionAnalyzer.startTimer()
-            headPoseAttentionAnalyzer.isHeadPoseAnalyzing = true
-        }
-
-        if (!isFaceDetected.value!!) {
-            headPoseAttentionAnalyzer.analyzeHeadPose(0f, 0f)
-        } else {
-            headPoseAttentionAnalyzer.analyzeHeadPose(eulerX, eulerY)
-        }
-        headPoseAttentionAnalyzer.evaluateAttention()
-        headPoseAttentionAnalyzer.analyzeAttentiveness()
-
-        if (headPoseAttentionAnalyzer.isDistracted) {
-            viewModel.lookAroundTime += (headPoseAttentionAnalyzer.duration * headPoseAttentionAnalyzer.perAttention).toLong()
-
-            if (!isAlertDialogShowing) {
-                isAlertDialogShowing = true
-                val alertDialog = MaterialAlertDialogBuilder(context)
-                    .setTitle(R.string.pay_attention)
-                    .setIcon(R.drawable.ic_warning)
-                    .setMessage(context.getString(R.string.head_pose_inattention_msg))
-                    .show()
-
-                object : CountDownTimer(5000, 1000) {
-                    override fun onTick(millisUntilFinished: Long) {
-                        Log.v(TAG, "$millisUntilFinished")
-                    }
-
-                    override fun onFinish() {
-                        alertDialog.dismiss()
-                        isAlertDialogShowing = false
-                    }
-
-                }.start()
+        if (isHeadPoseAnalysisShouldStart) {
+            if (!isFaceDetected.value!!) {
+                headPoseAttentionAnalyzer.analyzeHeadPose(0f, 0f)
+            } else {
+                headPoseAttentionAnalyzer.analyzeHeadPose(eulerX, eulerY)
             }
-
-            headPoseAttentionAnalyzer.isDistracted = false
+            headPoseAttentionAnalyzer.evaluateAttention()
         }
     }
 

@@ -106,4 +106,10 @@
     <string name="electronic_devices_detected">Electronic devices: %1$s</string>
     <string name="analysis_result">Analysis Result</string>
     <string name="back_to_home_page">Back to home page</string>
+    <string name="leave">Leave</string>
+    <string name="fatigue">Fatigue</string>
+    <string name="look_around">Look around</string>
+    <string name="elect_dev">Using 3C</string>
+    <string name="attention">Attention</string>
+    <string name="behavior">behavior</string>
 </resources>

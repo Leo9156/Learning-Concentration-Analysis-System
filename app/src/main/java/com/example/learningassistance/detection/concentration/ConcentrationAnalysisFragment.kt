@@ -65,16 +65,6 @@ class ConcentrationAnalysisFragment : Fragment() {
         val application = requireActivity().application
         val dao = TaskDatabase.getInstance(application).taskDao
 
-        // Create the view model
-        if (concentrationAnalysisViewModel == null) {
-            val taskId = requireActivity().intent.extras!!.getLong("taskId")
-            val concentrationAnalysisViewModelFactory = ConcentrationAnalysisViewModelFactory(dao, taskId)
-            concentrationAnalysisViewModel = ViewModelProvider(
-                requireActivity(),
-                concentrationAnalysisViewModelFactory
-            ).get(ConcentrationAnalysisViewModel::class.java)
-        }
-
         // Initialize face processors
         if (concentrationAnalysisFaceProcessor == null) {
             concentrationAnalysisFaceProcessor =
@@ -83,8 +73,7 @@ class ConcentrationAnalysisFragment : Fragment() {
                     headEulerOffsetX,
                     headEulerOffsetY,
                     binding.faceDetectionGraphicOverlay,
-                    binding.faceMeshGraphicOverlay,
-                    concentrationAnalysisViewModel!!)
+                    binding.faceMeshGraphicOverlay)
         }
         concentrationAnalysisFaceProcessor!!.start()
 
@@ -93,10 +82,25 @@ class ConcentrationAnalysisFragment : Fragment() {
             concentrationAnalysisObjectProcessor =
                 ConcentrationAnalysisObjectProcessor(
                     safeContext,
-                    binding.objectDetectionGraphicOverlay,
-                concentrationAnalysisViewModel!!)
+                    binding.objectDetectionGraphicOverlay)
         }
         concentrationAnalysisObjectProcessor!!.start()
+
+        // Create the view model
+        if (concentrationAnalysisViewModel == null) {
+            val taskId = requireActivity().intent.extras!!.getLong("taskId")
+            val concentrationAnalysisViewModelFactory = ConcentrationAnalysisViewModelFactory(
+                safeContext,
+                dao,
+                taskId,
+                concentrationAnalysisFaceProcessor!!,
+                concentrationAnalysisObjectProcessor!!
+            )
+            concentrationAnalysisViewModel = ViewModelProvider(
+                requireActivity(),
+                concentrationAnalysisViewModelFactory
+            ).get(ConcentrationAnalysisViewModel::class.java)
+        }
 
         return view
     }
@@ -109,6 +113,12 @@ class ConcentrationAnalysisFragment : Fragment() {
         } else {
             requestPermissions(REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS)
         }
+
+        // Update processors of the view model
+        concentrationAnalysisViewModel!!.updateProcessor(
+            concentrationAnalysisFaceProcessor!!,
+            concentrationAnalysisObjectProcessor!!
+        )
 
         // Detection card -> face
         concentrationAnalysisFaceProcessor!!.isFaceDetected.observe(viewLifecycleOwner, Observer {
