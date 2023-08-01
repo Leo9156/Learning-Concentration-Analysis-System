@@ -12,12 +12,29 @@
         tools:layout="@layout/fragment_home" />
     <fragment
         android:id="@+id/historyFragment"
-        android:name="com.example.learningassistance.HistoryFragment"
+        android:name="com.example.learningassistance.historypage.HistoryFragment"
         android:label="History"
-        tools:layout="@layout/fragment_history" />
+        tools:layout="@layout/fragment_history" >
+        <action
+            android:id="@+id/action_historyFragment_to_analysisChartFragment"
+            app:destination="@id/analysisChartFragment" />
+    </fragment>
     <fragment
         android:id="@+id/scheduleFragment"
         android:name="com.example.learningassistance.ScheduleFragment"
         android:label="Schedule"
         tools:layout="@layout/fragment_schedule" />
+    <fragment
+        android:id="@+id/analysisChartFragment"
+        android:name="com.example.learningassistance.historypage.AnalysisChartFragment"
+        android:label="fragment_analysis_chart"
+        tools:layout="@layout/fragment_analysis_chart" >
+        <argument
+            android:name="taskId"
+            app:argType="long" />
+        <action
+            android:id="@+id/action_analysisChartFragment_to_historyFragment"
+            app:destination="@id/historyFragment" />
+    </fragment>
+
 </navigation>

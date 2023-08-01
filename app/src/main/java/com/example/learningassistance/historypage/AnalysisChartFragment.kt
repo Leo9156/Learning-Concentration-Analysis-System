@@ -1,9 +1,9 @@
-package com.example.learningassistance.detection.result
+package com.example.learningassistance.historypage
 
 import android.content.Context
-import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -11,22 +11,20 @@ import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import com.example.learningassistance.MainActivity
+import androidx.navigation.fragment.findNavController
 import com.example.learningassistance.R
 import com.example.learningassistance.database.TaskDatabase
-import com.example.learningassistance.databinding.FragmentAnalysisResultsBinding
+import com.example.learningassistance.databinding.FragmentAnalysisChartBinding
 import com.github.mikephil.charting.animation.Easing
 import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
 import com.github.mikephil.charting.data.PieEntry
 import com.github.mikephil.charting.formatter.PercentFormatter
 
-class AnalysisResultsFragment : Fragment() {
-    // Context
-    private lateinit var context: Context
-    // View binding
-    private var _binding: FragmentAnalysisResultsBinding? = null
+class AnalysisChartFragment : Fragment() {
+    private var _binding: FragmentAnalysisChartBinding? = null
     private val binding get() = _binding!!
+    private lateinit var context: Context
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -36,53 +34,56 @@ class AnalysisResultsFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
+    ): View? {
         // Inflate the layout for this fragment
-        _binding = FragmentAnalysisResultsBinding.inflate(inflater, container, false)
+        _binding = FragmentAnalysisChartBinding.inflate(inflater, container, false)
         val view = binding.root
 
         // database
         val application = requireActivity().application
         val dao = TaskDatabase.getInstance(application).taskDao
 
-        // Initialize view model
-
-        val taskId = requireActivity().intent.extras!!.getLong("taskId")
-        val viewModelFactory = AnalysisResultsViewModelFactory(dao, taskId)
+        // View model
+        val taskId = AnalysisChartFragmentArgs.fromBundle(requireArguments()).taskId
+        val viewModelFactory = AnalysisChartViewModelFactory(dao, taskId)
         val viewModel = ViewModelProvider(
             requireActivity(),
             viewModelFactory
-        ).get(AnalysisResultsViewModel::class.java)
+        ).get(AnalysisChartViewModel::class.java)
+
+        viewModel.updateId(taskId)
+        viewModel.setTask()
 
         viewModel.task.observe(viewLifecycleOwner, Observer {
             if (it != null) {
+                Log.v(TAG, "id: ${viewModel.id}")
                 viewModel.calculatePercent()
                 binding.attentionScore.text = String.format(getString(R.string.attention_score_actual), viewModel.attentionPercent)
                 initPieChart()
                 showPieChart(viewModel)
+                viewModel.task.value = null
             }
         })
 
         binding.homeBtn.setOnClickListener {
-            val intent = Intent(context, MainActivity::class.java)
-            startActivity(intent)
+            this.findNavController().navigate(R.id.action_analysisChartFragment_to_historyFragment)
         }
 
         return view
     }
 
     private fun initPieChart() {
-        binding.resultChart.setUsePercentValues(true)
-        binding.resultChart.description.isEnabled = false
-        binding.resultChart.isRotationEnabled = true
-        binding.resultChart.dragDecelerationFrictionCoef = 0.95f  // Adding friction coef when rotating the chart
-        binding.resultChart.isHighlightPerTapEnabled = true
-        binding.resultChart.animateY(1400, Easing.EaseInOutQuad)
-        binding.resultChart.setExtraOffsets(5f, 5f, 5f, 5f)
-        binding.resultChart.minAngleForSlices = 20f
+        binding.analysisChart.setUsePercentValues(true)
+        binding.analysisChart.description.isEnabled = false
+        binding.analysisChart.isRotationEnabled = true
+        binding.analysisChart.dragDecelerationFrictionCoef = 0.95f  // Adding friction coef when rotating the chart
+        binding.analysisChart.isHighlightPerTapEnabled = true
+        binding.analysisChart.animateY(1400, Easing.EaseInOutQuad)
+        binding.analysisChart.setExtraOffsets(5f, 5f, 5f, 5f)
+        binding.analysisChart.minAngleForSlices = 20f
     }
 
-    private fun showPieChart(viewModel: AnalysisResultsViewModel) {
+    private fun showPieChart(viewModel: AnalysisChartViewModel) {
         // Elements shown in the chart
         val pieEntries = ArrayList<PieEntry>()
         val colors = ArrayList<Int>()
@@ -117,11 +118,11 @@ class AnalysisResultsFragment : Fragment() {
         pieData.setDrawValues(true)
         pieData.setValueTextSize(15f)
         pieData.setValueTextColor(Color.WHITE)
-        pieData.setValueFormatter(PercentFormatter(binding.resultChart))
-        binding.resultChart.data = pieData
+        pieData.setValueFormatter(PercentFormatter(binding.analysisChart))
+        binding.analysisChart.data = pieData
 
         // Draw the chart
-        binding.resultChart.invalidate()
+        binding.analysisChart.invalidate()
     }
 
     override fun onDestroyView() {
@@ -130,6 +131,6 @@ class AnalysisResultsFragment : Fragment() {
     }
 
     companion object {
-        private val TAG = "AnalysisResultsFragment"
+        private val TAG = "AnalysisChartFragment"
     }
 }

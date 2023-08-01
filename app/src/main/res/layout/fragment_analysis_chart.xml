@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".detection.result.AnalysisResultsFragment">
+    tools:context=".historypage.AnalysisChartFragment">
 
     <TextView
         android:id="@+id/analysis_title"
@@ -80,7 +80,7 @@
     </com.google.android.material.card.MaterialCardView>
 
     <com.github.mikephil.charting.charts.PieChart
-        android:id="@+id/result_chart"
+        android:id="@+id/analysis_chart"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginStart="8dp"

@@ -50,7 +50,6 @@
             app:layout_constraintStart_toStartOf="@+id/task_constraint"
             tools:text="1 hr 30 min"
             app:drawableLeftCompat="@drawable/ic_clock"
-
             android:drawablePadding="4dp"
             android:gravity="center_vertical"/>
 
