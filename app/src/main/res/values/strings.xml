@@ -113,5 +113,18 @@
     <string name="behavior">behavior</string>
     <string name="analysis">Analysis</string>
     <string name="attention_score">Attention Score</string>
-    <string name="attention_score_actual">%1$.1f/100</string>
+    <string name="attention_score_actual">%1$.1f / 100</string>
+    <string name="report">report</string>
+    <string name="report_big">Report</string>
+    <string name="average_attention">Average attention</string>
+    <string name="average_learning">Average learning time</string>
+    <string name="day">/ day</string>
+    <string name="evaluation">Evaluation</string>
+    <string name="attention_score_total">%1$.1f / 100</string>
+    <string name="learning_time_per_day">%1$d min</string>
+    <string name="excellent">Excellent</string>
+    <string name="great">Great</string>
+    <string name="so_so">So So</string>
+    <string name="bad">Bad</string>
+    <string name="should_be_improved">Should be improved</string>
 </resources>

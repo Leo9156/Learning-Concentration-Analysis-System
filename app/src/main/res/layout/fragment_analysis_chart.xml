@@ -56,14 +56,14 @@
 
             <TextView
                 android:id="@+id/attention_score"
-                style="@style/TextAppearance.Material3.TitleLarge"
+                style="@style/TextAppearance.Material3.HeadlineMedium"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/card_title"
                 android:text="@string/attention_score_actual"
-                tools:text="50/100" />
+                tools:text="50 / 100" />
 
             <ImageView
                 android:id="@+id/card_image"

@@ -20,10 +20,10 @@
             app:destination="@id/analysisChartFragment" />
     </fragment>
     <fragment
-        android:id="@+id/scheduleFragment"
-        android:name="com.example.learningassistance.ScheduleFragment"
-        android:label="Schedule"
-        tools:layout="@layout/fragment_schedule" />
+        android:id="@+id/reportFragment"
+        android:name="com.example.learningassistance.reportpage.ReportFragment"
+        android:label="Report"
+        tools:layout="@layout/fragment_report" />
     <fragment
         android:id="@+id/analysisChartFragment"
         android:name="com.example.learningassistance.historypage.AnalysisChartFragment"
