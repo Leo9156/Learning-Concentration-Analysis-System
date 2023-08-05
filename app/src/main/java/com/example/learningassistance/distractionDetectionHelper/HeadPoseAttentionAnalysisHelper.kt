@@ -1,17 +1,11 @@
-package com.example.learningassistance.facedetection
+package com.example.learningassistance.distractionDetectionHelper
 
 import android.content.Context
 import android.media.MediaPlayer
-import android.os.CountDownTimer
-import android.util.Log
-import android.widget.TextView
-import androidx.constraintlayout.widget.ConstraintLayout
 import com.example.learningassistance.R
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.snackbar.Snackbar
 
 // TODO: Design more accurate method to distinguish look around and look at other side for a period of time
-class HeadPoseAttentionAnalysis(
+class HeadPoseAttentionAnalysisHelper(
     private val context: Context,
 ) {
     private var slidingWindowSize = 30

@@ -193,11 +193,11 @@ class HeadPoseMeasureFragment : Fragment() {
                 headPoseViewModel!!.reset()
 
                 // Launch the concentration analysis fragment
-                val action =
-                    HeadPoseMeasureFragmentDirections.actionHeadPoseMeasureFragmentToCameraPreviewFragment(
-                        headPoseFaceDetectionProcessor.headEulerXOffset,
-                        headPoseFaceDetectionProcessor.headEulerYOffset
-                    )
+                val action = HeadPoseMeasureFragmentDirections.actionHeadPoseMeasureFragmentToConcentrationAnalysisFragment(
+                    headPoseFaceDetectionProcessor.headEulerXOffset,
+                    headPoseFaceDetectionProcessor.avgEAR,
+                    headPoseFaceDetectionProcessor.headEulerYOffset
+                )
                 this.findNavController().navigate(action)
             }
         })

@@ -168,5 +168,4 @@ class ReportFragment : Fragment() {
         viewModel.reset()
         _binding = null
     }
-
 }

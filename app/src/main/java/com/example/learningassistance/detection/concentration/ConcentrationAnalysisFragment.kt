@@ -58,9 +58,9 @@ class ConcentrationAnalysisFragment : Fragment() {
         val view = binding.root
 
         // Get the basic head rotation
-        val headEulerOffsetX = ConcentrationAnalysisFragmentArgs.fromBundle(requireArguments()).basicHeadPoseOffsetX
-        val headEulerOffsetY = ConcentrationAnalysisFragmentArgs.fromBundle(requireArguments()).basicHeadPoseOffsetY
-
+        val headEulerOffsetX = ConcentrationAnalysisFragmentArgs.fromBundle(requireArguments()).basicHeadOffsetX
+        val headEulerOffsetY = ConcentrationAnalysisFragmentArgs.fromBundle(requireArguments()).basicHeadOffsetY
+        val avgEAR = ConcentrationAnalysisFragmentArgs.fromBundle(requireArguments()).avgEAR
         // Initialize the dao interface of the task database
         val application = requireActivity().application
         val dao = TaskDatabase.getInstance(application).taskDao
@@ -72,10 +72,13 @@ class ConcentrationAnalysisFragment : Fragment() {
                     safeContext,
                     headEulerOffsetX,
                     headEulerOffsetY,
+                    avgEAR * 0.7f,
                     binding.faceDetectionGraphicOverlay,
                     binding.faceMeshGraphicOverlay)
         }
         concentrationAnalysisFaceProcessor!!.start()
+
+        Log.v(TAG, "threshold: ${avgEAR * 0.7f}")
 
         // Initialize object processor
         if (concentrationAnalysisObjectProcessor == null) {
@@ -407,8 +410,10 @@ class ConcentrationAnalysisFragment : Fragment() {
                 concentrationAnalysisViewModel!!.isTimerShouldStart.value = true
             }
         }
-        concentrationAnalysisFaceProcessor!!.headEulerOffsetX = ConcentrationAnalysisFragmentArgs.fromBundle(requireArguments()).basicHeadPoseOffsetX
-        concentrationAnalysisFaceProcessor!!.headEulerOffsetY = ConcentrationAnalysisFragmentArgs.fromBundle(requireArguments()).basicHeadPoseOffsetY
+        concentrationAnalysisFaceProcessor!!.headEulerOffsetX = ConcentrationAnalysisFragmentArgs.fromBundle(requireArguments()).basicHeadOffsetX
+        concentrationAnalysisFaceProcessor!!.headEulerOffsetY = ConcentrationAnalysisFragmentArgs.fromBundle(requireArguments()).basicHeadOffsetY
+        concentrationAnalysisFaceProcessor!!.closedEyesThreshold = (ConcentrationAnalysisFragmentArgs.fromBundle(requireArguments()).avgEAR) * 0.7f
+
     }
 
     override fun onDestroyView() {

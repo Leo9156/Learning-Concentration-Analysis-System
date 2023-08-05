@@ -1,14 +1,13 @@
-package com.example.learningassistance.facedetection
+package com.example.learningassistance.distractionDetectionHelper
 
 import android.content.Context
 import android.media.MediaPlayer
-import android.media.RingtoneManager
 import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
 import com.example.learningassistance.R
 
-class NoFaceDetection(private val context: Context) {
+class NoFaceDetectionHelper(private val context: Context) {
 
     private var totalFrameNumber = 0
     private var isNoFaceDialogShowing = false

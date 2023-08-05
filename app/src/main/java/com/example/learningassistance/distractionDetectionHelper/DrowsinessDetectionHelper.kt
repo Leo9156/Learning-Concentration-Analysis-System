@@ -1,8 +1,7 @@
-package com.example.learningassistance.facedetection
+package com.example.learningassistance.distractionDetectionHelper
 
 import android.content.Context
 import android.media.MediaPlayer
-import android.media.RingtoneManager
 import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
@@ -11,13 +10,12 @@ import com.google.mlkit.vision.common.PointF3D
 import com.google.mlkit.vision.facemesh.FaceMeshPoint
 import kotlin.math.sqrt
 
-class DrowsinessDetection(private val context: Context) {
+class DrowsinessDetectionHelper(private val context: Context) {
 
     private var totalFrameNumber = 0
     private var isFatigueDialogShowing = false
     private var closedEyesFrameNumber = 0
     private var perClose = 0f
-    private var closedEyeThreshold = 0.2
     private var detectionPeriodMs: Long = 30000
     private var awakeThreshold = 0.15
     private var fatigueThreshold = 0.3
@@ -111,13 +109,6 @@ class DrowsinessDetection(private val context: Context) {
     }
     fun resetYawningDetect() {
         startYawningTimer()
-    }
-    fun setClosedEyeThreshold(threshold: Double) {
-        this.closedEyeThreshold = threshold
-    }
-
-    fun getClosedEyeThreshold(): Double {
-        return this.closedEyeThreshold
     }
 
     fun setDetectionPeriodMs(period: Long) {

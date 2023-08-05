@@ -1,19 +1,15 @@
 package com.example.learningassistance.detection.concentration
 
 import android.content.Context
-import android.os.CountDownTimer
 import android.util.Log
-import android.widget.Toast
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
 import androidx.lifecycle.MutableLiveData
-import com.example.learningassistance.R
-import com.example.learningassistance.facedetection.DrowsinessDetection
-import com.example.learningassistance.facedetection.HeadPoseAttentionAnalysis
-import com.example.learningassistance.facedetection.NoFaceDetection
+import com.example.learningassistance.distractionDetectionHelper.DrowsinessDetectionHelper
+import com.example.learningassistance.distractionDetectionHelper.HeadPoseAttentionAnalysisHelper
+import com.example.learningassistance.distractionDetectionHelper.NoFaceDetectionHelper
 import com.example.learningassistance.graphicOverlay.FaceDetectionGraphicOverlay
 import com.example.learningassistance.graphicOverlay.FaceMeshGraphicOverlay
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.Face
 import com.google.mlkit.vision.face.FaceDetection
@@ -25,9 +21,10 @@ import com.google.mlkit.vision.facemesh.FaceMeshDetector
 import com.google.mlkit.vision.facemesh.FaceMeshDetectorOptions
 
 class ConcentrationAnalysisFaceProcessor(
-    private val context: Context,
+    context: Context,
     var headEulerOffsetX: Float,
     var headEulerOffsetY: Float,
+    var closedEyesThreshold: Float,
     private val faceGraphicOverlay: FaceDetectionGraphicOverlay,
     private val faceMeshGraphicOverlay: FaceMeshGraphicOverlay,
     ) : ImageAnalysis.Analyzer {
@@ -44,13 +41,13 @@ class ConcentrationAnalysisFaceProcessor(
     private var faceMeshDetector: FaceMeshDetector? = null
 
     // Drowsiness detector
-    val drowsinessDetector = DrowsinessDetection(context)
+    val drowsinessDetector = DrowsinessDetectionHelper(context)
 
     // No face detector
-    val noFaceDetector = NoFaceDetection(context)
+    val noFaceDetector = NoFaceDetectionHelper(context)
 
     // head pose analyzer
-    val headPoseAttentionAnalyzer = HeadPoseAttentionAnalysis(context)
+    val headPoseAttentionAnalyzer = HeadPoseAttentionAnalysisHelper(context)
 
     // head rotation
     val rotX = MutableLiveData<Float?>(null)
@@ -174,7 +171,7 @@ class ConcentrationAnalysisFaceProcessor(
         if (isDrowsinessDetectionShouldStart) {
             drowsinessDetector.increaseTotalFrameNumber()
 
-            if (drowsinessDetector.getEAR() < drowsinessDetector.getClosedEyeThreshold()) {
+            if (drowsinessDetector.getEAR() < closedEyesThreshold) {
                 drowsinessDetector.increaseClosedEyesFrameNumber()
                 isEyesOpen.value = false
             } else {

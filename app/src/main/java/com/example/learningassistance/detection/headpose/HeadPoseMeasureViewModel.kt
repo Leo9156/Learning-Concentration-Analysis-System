@@ -1,6 +1,7 @@
 package com.example.learningassistance.detection.headpose
 
 import android.os.CountDownTimer
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 
@@ -58,6 +59,10 @@ class HeadPoseMeasureViewModel(
 
                 // Get the basic head pose results
                 headPoseFaceDetectionProcessor.calculateBasicHeadEulerAngle()
+
+                // Get the basic EAR
+                headPoseFaceDetectionProcessor.calculateAvgEar()
+                Log.v(TAG, "avg ear: ${headPoseFaceDetectionProcessor.avgEAR}")
 
                 // Reset the attributes in the head processor
                 headPoseFaceDetectionProcessor.resetProperties()

@@ -5,9 +5,16 @@ import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
 import androidx.lifecycle.MutableLiveData
 import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.common.PointF3D
 import com.google.mlkit.vision.face.FaceDetection
 import com.google.mlkit.vision.face.FaceDetector
 import com.google.mlkit.vision.face.FaceDetectorOptions
+import com.google.mlkit.vision.facemesh.FaceMeshDetection
+import com.google.mlkit.vision.facemesh.FaceMeshDetector
+import com.google.mlkit.vision.facemesh.FaceMeshDetectorOptions
+import com.google.mlkit.vision.facemesh.FaceMeshPoint
+import kotlin.math.abs
+import kotlin.math.sqrt
 
 class HeadPoseFaceDetectionProcessor: ImageAnalysis.Analyzer {
 
@@ -15,14 +22,21 @@ class HeadPoseFaceDetectionProcessor: ImageAnalysis.Analyzer {
     var rotX = MutableLiveData<Float?>(null)
     var rotY = MutableLiveData<Float?>(null)
 
+    // Eyes aspect Ratio
+    var EAR = MutableLiveData<Float?>(null)
+    var prevEAR = 0f
+
     // Average head rotation degree
     var headEulerXOffset = 0f
     var headEulerYOffset = 0f
+    var avgEAR = 0f
 
     // The necessary calculation resources for head position analysis
     var sumOfHeadEulerX = 0f
     var sumOfHeadEulerY = 0f
+    var sumOfEAR= 0f
     var totalFrame = 0
+    var totalEarFrame = 0
 
     // The state of analysis
     var isAnalysisStarting = false  // Indicate whether the analysis has started
@@ -36,6 +50,10 @@ class HeadPoseFaceDetectionProcessor: ImageAnalysis.Analyzer {
         .setClassificationMode(FaceDetectorOptions.CLASSIFICATION_MODE_ALL)
         .build()
     private var faceDetectionDetector: FaceDetector? = null
+
+    // Face mesh detector
+    private val faceMeshOptions = FaceMeshDetectorOptions.Builder()
+    private var faceMeshDetector: FaceMeshDetector? = null
 
 
     @androidx.annotation.OptIn(androidx.camera.core.ExperimentalGetImage::class)
@@ -57,6 +75,7 @@ class HeadPoseFaceDetectionProcessor: ImageAnalysis.Analyzer {
                             // Set the rotation degrees to null
                             rotX.value = null
                             rotY.value = null
+                            EAR.value = null
 
                             // If analyzing, stop the analysis
                             if (isAnalysisStarting) {
@@ -84,20 +103,85 @@ class HeadPoseFaceDetectionProcessor: ImageAnalysis.Analyzer {
                     .addOnCompleteListener {
                         imageProxy.close()
                     }
+
+                if (faceMeshDetector != null) {
+                    faceMeshDetector!!.process(image)
+                        .addOnSuccessListener { faceMeshes ->
+                            if (this.isFaceDetected.value!!) {
+                                if (faceMeshes.size == 0) {
+                                    // Change the state of analysis
+                                    this.canAnalysisStart = false
+                                    this.isFaceDetected.value = false
+
+                                    // Set the rotation degrees to null
+                                    rotX.value = null
+                                    rotY.value = null
+                                    EAR.value = null
+
+                                    // If analyzing, stop the analysis
+                                    if (isAnalysisStarting) {
+                                        hasToRestart.value = true
+                                    }
+                                } else {
+                                    for (faceMesh in faceMeshes) {
+                                        EAR.value = calculateEAR(faceMesh.allPoints)
+                                        checkDifferencePercent(EAR.value!!)
+                                        if (isAnalysisStarting) {
+                                            prevEAR = EAR.value!!
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        .addOnFailureListener { e ->
+                            Log.e(TAG, "Face mesh detector failed. $e")
+                        }
+                        .addOnCompleteListener {
+                            imageProxy.close()
+                        }
+                }
             } else {
                 imageProxy.close()
             }
         }
     }
 
+    private fun checkDifferencePercent(ear: Float) {
+        if (prevEAR != 0f) {
+            val difference = abs((ear - prevEAR)) / ear
+            if (difference < 0.5f) {
+                sumOfEAR += ear
+                totalEarFrame++
+            }
+        }
+    }
+
+    private fun calculateEAR(allPoints: List<FaceMeshPoint>): Float {
+        // Left EAR
+        val aLeft = calculateDistance(allPoints[362].position, allPoints[263].position)
+        val bLeft = calculateDistance(allPoints[385].position, allPoints[380].position)
+        val cLeft = calculateDistance(allPoints[387].position, allPoints[373].position)
+        val leftEAR = (bLeft + cLeft) / (2f * aLeft)
+
+        // Right EAR
+        val aRight = calculateDistance(allPoints[33].position, allPoints[133].position)
+        val bRight = calculateDistance(allPoints[160].position, allPoints[144].position)
+        val cRight = calculateDistance(allPoints[158].position, allPoints[153].position)
+        val rightEAR = (bRight + cRight) / (2f * aRight)
+
+        return (leftEAR + rightEAR) / 2f
+    }
+
+    private fun calculateDistance(point1: PointF3D, point2: PointF3D): Float {
+        val xDiff = point1.x - point2.x
+        val yDiff = point1.y - point2.y
+        return sqrt((xDiff * xDiff) + (yDiff * yDiff))
+    }
+
     private fun sumHeadEulerAngle() {
         sumOfHeadEulerX += rotX.value ?: 0f
         sumOfHeadEulerY += rotY.value ?: 0f
         totalFrame++
-        Log.v(TAG, "sumx: $sumOfHeadEulerX")
-        Log.v(TAG, "sumy: $sumOfHeadEulerY")
-        Log.v(TAG, "sumframe: $totalFrame")
-
     }
 
     fun calculateBasicHeadEulerAngle() {
@@ -105,13 +189,17 @@ class HeadPoseFaceDetectionProcessor: ImageAnalysis.Analyzer {
         headEulerYOffset = String.format("%.2f", sumOfHeadEulerY / totalFrame.toFloat()).toFloat()
     }
 
+    fun calculateAvgEar() {
+        avgEAR = String.format("%.2f", sumOfEAR / totalEarFrame.toFloat()).toFloat()
+    }
+
     fun resetProperties() {
         sumOfHeadEulerX = 0f
         sumOfHeadEulerY = 0f
+        sumOfEAR = 0f
         totalFrame = 0
-        /*isAnalysisStarting = false
-        canAnalysisStart = false
-        hasToRestart = false*/
+        totalEarFrame = 0
+        prevEAR = 0f
     }
 
     fun close() {
@@ -119,11 +207,18 @@ class HeadPoseFaceDetectionProcessor: ImageAnalysis.Analyzer {
             faceDetectionDetector!!.close()
             faceDetectionDetector = null
         }
+        if (faceMeshDetector != null) {
+            faceMeshDetector!!.close()
+            faceMeshDetector = null
+        }
     }
 
     fun start() {
         if (faceDetectionDetector == null) {
             faceDetectionDetector = FaceDetection.getClient(faceDetectionOptions)
+        }
+        if (faceMeshDetector == null) {
+            faceMeshDetector = FaceMeshDetection.getClient(faceMeshOptions.build())
         }
     }
 

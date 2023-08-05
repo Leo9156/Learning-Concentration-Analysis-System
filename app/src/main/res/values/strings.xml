@@ -63,7 +63,7 @@
     <string name="delete">Delete</string>
     <string name="please_notice">Please Notice</string>
     <string name="notification">Notification</string>
-    <string name="precaution_description">To provide more accurate detection results, please start the basic learning position analysis. This analysis will measure your average head position and rotation degree to avoid any deviations caused by the angle between your head and the camera. Thus, please make a comfortable learning pose and start analysis.</string>
+    <string name="precaution_description">To provide more accurate results, we need to analyze your learning position before starting concentration analysis. This will measure your average head rotation degrees and eyes aspect ratio to avoid any deviations caused by the angle between you and the camera.</string>
     <string name="precaution_item1">Please ensure that your face appears within the camera.</string>
     <string name="precaution_item2">Please try to avoid moving your head while analyzing.</string>
     <string name="precaution_item3">Please try to avoid moving your cellphone after analyzing.</string>
@@ -71,14 +71,14 @@
     <string name="head_pose_analysis">Head Pose Analysis</string>
     <string name="start_head_pose_analysis">Start Head Pose Analysis</string>
     <string name="analysis_details">Analysis Details</string>
-    <string name="head_pose_analysis_instruction1"> Please ensure your face has appeared in the camera.</string>
+    <string name="head_pose_analysis_instruction1">Please ensure your face has appeared in the camera.</string>
     <string name="num1">1.</string>
     <string name="_2">2.</string>
-    <string name="head_pose_instrc2"> Please select a good position to place your device. We recommend to place it in front of you.</string>
+    <string name="head_pose_instrc2">Please select a good position to place your device. We recommend to place it in front of you.</string>
     <string name="num3">3.</string>
-    <string name="head_pose_instruc3"> After clicking the start button, the analysis will start 3 seconds later.</string>
+    <string name="head_pose_instruc3">Click the button, start analysis after 3 sec</string>
     <string name="num4">4.</string>
-    <string name="head_pose_instruc4"> During analysis, please not to move the phone or look around. Please focus on what you want to study.</string>
+    <string name="head_pose_instruc4">During analysis, please not to move the phone or look around. Please focus on what you want to study.</string>
     <string name="face_detection">Face Detection</string>
     <string name="head_pose_card_eulerx">Rotation (up and down): %.2f degree</string>
     <string name="head_pose_card_eulery">Rotation (left and right): %.2f degree</string>
@@ -127,4 +127,10 @@
     <string name="so_so">So So</string>
     <string name="bad">Bad</string>
     <string name="should_be_improved">Should be improved</string>
+    <string name="guide">Guide</string>
+    <string name="head_pose_guide_1">Put your device in front of you</string>
+    <string name="head_pose_guide_2">Ensure your face has appeared in the camera</string>
+    <string name="head_pose_guide_4">Don\'t move while analyzing</string>
+    <string name="_5">5.</string>
+    <string name="head_pose_guide_5">Focus on what you\'re studying until finished</string>
 </resources>

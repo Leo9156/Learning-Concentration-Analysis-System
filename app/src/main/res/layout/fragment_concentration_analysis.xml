@@ -18,6 +18,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        android:textStyle="bold"
         tools:text="02:30:10" />
 
     <com.google.android.material.card.MaterialCardView
@@ -208,7 +209,7 @@
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:id="@+id/detection_sheet_coordinate"
         android:layout_width="match_parent"
-        android:layout_height="420dp"
+        android:layout_height="430dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
@@ -219,7 +220,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior"
-            app:behavior_peekHeight="100dp"
+            app:behavior_peekHeight="125dp"
             app:behavior_hideable="false">
 
             <com.google.android.material.bottomsheet.BottomSheetDragHandleView
@@ -230,11 +231,12 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
-            <ImageView
+            <Button
                 android:id="@+id/detection_play"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_play"
+                style="?attr/materialIconButtonStyle"
+                app:icon="@drawable/ic_play"
                 android:clickable="false"
                 app:layout_constraintEnd_toStartOf="@+id/detection_pause"
                 app:layout_constraintStart_toStartOf="parent"
@@ -245,16 +247,19 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/start"
+                android:textColor="?attr/colorPrimary"
                 app:layout_constraintStart_toStartOf="@+id/detection_play"
                 app:layout_constraintTop_toBottomOf="@+id/detection_play"
                 app:layout_constraintEnd_toEndOf="@+id/detection_play" />
 
 
-            <ImageView
+            <Button
                 android:id="@+id/detection_pause"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_pause"
+                style="?attr/materialIconButtonStyle"
+
+                app:icon="@drawable/ic_pause"
                 app:layout_constraintEnd_toStartOf="@+id/detection_stop"
                 app:layout_constraintStart_toEndOf="@+id/detection_play"
                 app:layout_constraintTop_toBottomOf="@+id/drag_handle" />
@@ -264,15 +269,18 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/pause"
+                android:textColor="?attr/colorPrimary"
                 app:layout_constraintStart_toStartOf="@+id/detection_pause"
                 app:layout_constraintTop_toBottomOf="@+id/detection_pause"
                 app:layout_constraintEnd_toEndOf="@+id/detection_pause" />
 
-            <ImageView
+            <Button
                 android:id="@+id/detection_stop"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_stop"
+                style="?attr/materialIconButtonStyle"
+                app:icon="@drawable/ic_stop"
+
                 app:layout_constraintStart_toEndOf="@+id/detection_pause"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="@+id/detection_pause"/>
@@ -282,6 +290,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/stop"
+                android:textColor="?attr/colorPrimary"
                 app:layout_constraintStart_toStartOf="@+id/detection_stop"
                 app:layout_constraintTop_toBottomOf="@+id/detection_stop"
                 app:layout_constraintEnd_toEndOf="@+id/detection_stop" />
