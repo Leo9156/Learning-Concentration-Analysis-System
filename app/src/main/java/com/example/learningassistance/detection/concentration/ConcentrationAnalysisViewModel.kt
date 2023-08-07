@@ -195,6 +195,35 @@ class ConcentrationAnalysisViewModel(
             }
             return true
         }
+        else if(faceProcessor.drowsinessDetector.getTotalYawningPeriod()>10000) {
+            fatigueTime += 30000
+            if (!isAlertDialogShowing) {
+                isAlertDialogShowing = true
+                if (!faceProcessor.drowsinessDetector.isAlarmPlaying()) {
+                    faceProcessor.drowsinessDetector.playAlarm()
+                }
+                if (!faceProcessor.drowsinessDetector.isVibrating()) {
+                    faceProcessor.drowsinessDetector.startVibrating()
+                }
+                MaterialAlertDialogBuilder(context)
+                    .setTitle(R.string.warning)
+                    .setIcon(R.drawable.ic_warning)
+                    .setMessage(context.getString(R.string.drowsiness_alert_dialog_msg))
+                    .setPositiveButton(R.string.close) { dialog, _ ->
+                        if (faceProcessor.drowsinessDetector.isAlarmPlaying()) {
+                            faceProcessor.drowsinessDetector.stopAlarm()
+                        }
+                        if (faceProcessor.drowsinessDetector.isVibrating()) {
+                            faceProcessor.drowsinessDetector.stopVibrating()
+                        }
+                        isAlertDialogShowing = false
+                        dialog.dismiss()
+                    }
+                    .setCancelable(false)
+                    .show()
+            }
+            return true
+        }
         return false
     }
 

@@ -119,6 +119,7 @@ class ConcentrationAnalysisFaceProcessor(
                         } else {
                             for (faceMesh in faceMeshes) {
                                 drowsinessDetector.calculateEAR(faceMesh.allPoints)
+                                drowsinessDetector.calculateMOR(faceMesh.allPoints)
                             }
                         }
 
@@ -181,6 +182,33 @@ class ConcentrationAnalysisFaceProcessor(
                     isEyesOpen.value = true
                 }
             }
+
+            if (drowsinessDetector.getMOR() > drowsinessDetector.getYawningThreshold()/*set threshold*/) {
+                if(!drowsinessDetector.getYawningStatus()) {
+                    drowsinessDetector.setYawningStatus(true)
+                    drowsinessDetector.startYawningTimer()
+                }
+                /*
+                *       if yawning is false set to true and start timer
+                * */
+                drowsinessDetector.increaseOpenMouthNumber()
+            }
+            else {
+                if(drowsinessDetector.getYawningStatus())
+                {
+                    drowsinessDetector.setYawningStatus(false)
+                    drowsinessDetector.endYawningTimer()
+                    drowsinessDetector.calculateYawningDetectDuration()
+                    if(drowsinessDetector.getYawningDetectionDuration()>5000) {
+                        drowsinessDetector.addTotalYawningPeriod()
+                    }
+                }
+                /*
+                * if yawning is true set to false, if the yawning duration larger than 5 sec add it to total duration
+                *
+                * */
+            }
+
         }
     }
 
