@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.learningassistance.database.Task
 import com.example.learningassistance.database.TaskDao
 import kotlinx.coroutines.launch
+import java.time.DayOfWeek
 import java.time.LocalDate
 
 class TaskViewModel(val dao: TaskDao) : ViewModel() {

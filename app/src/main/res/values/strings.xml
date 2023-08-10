@@ -126,7 +126,7 @@
     <string name="great">Great</string>
     <string name="so_so">So So</string>
     <string name="bad">Bad</string>
-    <string name="should_be_improved">Should be improved</string>
+    <string name="should_be_improved">Not good</string>
     <string name="guide">Guide</string>
     <string name="head_pose_guide_1">Put your device in front of you</string>
     <string name="head_pose_guide_2">Ensure your face has appeared in the camera</string>

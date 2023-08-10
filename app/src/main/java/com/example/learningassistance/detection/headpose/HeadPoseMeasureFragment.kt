@@ -43,6 +43,9 @@ class HeadPoseMeasureFragment : Fragment() {
     // Face detection processor
     private lateinit var headPoseFaceDetectionProcessor: HeadPoseFaceDetectionProcessor
 
+    // Media player
+    private var mediaPlayer: MediaPlayer? = null
+
     override fun onAttach(context: Context) {
         super.onAttach(context)
         this.safeContext = context
@@ -160,11 +163,12 @@ class HeadPoseMeasureFragment : Fragment() {
             } else {
                 binding.headPoseStartTimer.visibility = View.VISIBLE
                 binding.headPoseStartTimer.text = it.toString()
-                val mediaPlayer = MediaPlayer.create(safeContext, R.raw.beep_sound)
-                mediaPlayer.setOnCompletionListener {
+                mediaPlayer = MediaPlayer.create(safeContext, R.raw.beep_sound)
+                mediaPlayer?.setOnCompletionListener {
                     it.release()
+                    mediaPlayer = null
                 }
-                mediaPlayer.start()
+                mediaPlayer?.start()
             }
         })
 
