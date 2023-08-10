@@ -199,7 +199,7 @@ class ConcentrationAnalysisFaceProcessor(
                     drowsinessDetector.setYawningStatus(false)
                     drowsinessDetector.endYawningTimer()
                     drowsinessDetector.calculateYawningDetectDuration()
-                    if(drowsinessDetector.getYawningDetectionDuration()>5000) {
+                    if(drowsinessDetector.getYawningDetectionDuration()>3000) {
                         drowsinessDetector.addTotalYawningPeriod()
                     }
                 }
