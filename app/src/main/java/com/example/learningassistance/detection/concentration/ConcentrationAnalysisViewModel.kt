@@ -93,7 +93,7 @@ class ConcentrationAnalysisViewModel(
         if (concentrationAnalysisTimer == null) {
             startConcentrationAnalysis()
 
-            concentrationAnalysisTimer = object : CountDownTimer(10000, 1000) {
+            concentrationAnalysisTimer = object : CountDownTimer(15000, 1000) {
                 override fun onTick(millisUntilFinished: Long) {
                     Log.v(TAG, "Analyzing ... (${millisUntilFinished / 1000} left)")
                 }
