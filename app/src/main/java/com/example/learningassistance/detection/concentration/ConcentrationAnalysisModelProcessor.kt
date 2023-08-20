@@ -1,15 +1,20 @@
 package com.example.learningassistance.detection.concentration
 
 import android.content.Context
-import android.util.Log
+import android.graphics.Bitmap
+import android.graphics.Matrix
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
 import androidx.lifecycle.MutableLiveData
+import com.example.learningassistance.detection.concentration.yolov5.ImageProcess
+import com.example.learningassistance.detection.concentration.yolov5.Results
+import com.example.learningassistance.detection.concentration.yolov5.Yolov5TFliteDetector
 import com.example.learningassistance.distractionDetectionHelper.DrowsinessDetectionHelper
 import com.example.learningassistance.distractionDetectionHelper.HeadPoseAttentionAnalysisHelper
 import com.example.learningassistance.distractionDetectionHelper.NoFaceDetectionHelper
 import com.example.learningassistance.graphicOverlay.FaceDetectionGraphicOverlay
 import com.example.learningassistance.graphicOverlay.FaceMeshGraphicOverlay
+import com.example.learningassistance.graphicOverlay.ObjectDetectionGraphicOverlay
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.face.Face
 import com.google.mlkit.vision.face.FaceDetection
@@ -19,15 +24,23 @@ import com.google.mlkit.vision.facemesh.FaceMesh
 import com.google.mlkit.vision.facemesh.FaceMeshDetection
 import com.google.mlkit.vision.facemesh.FaceMeshDetector
 import com.google.mlkit.vision.facemesh.FaceMeshDetectorOptions
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 
-class ConcentrationAnalysisFaceProcessor(
+class ConcentrationAnalysisModelProcessor(
     context: Context,
+    private val yolov5TFliteDetector: Yolov5TFliteDetector,
     var headEulerOffsetX: Float,
     var headEulerOffsetY: Float,
     var closedEyesThreshold: Float,
     private val faceGraphicOverlay: FaceDetectionGraphicOverlay,
     private val faceMeshGraphicOverlay: FaceMeshGraphicOverlay,
+    private val objectDetectionGraphicOverlay: ObjectDetectionGraphicOverlay,
     ) : ImageAnalysis.Analyzer {
+    private var cnt = 0
 
     // Face detector
     private val faceDetectionOptions = FaceDetectorOptions.Builder()
@@ -39,6 +52,19 @@ class ConcentrationAnalysisFaceProcessor(
     // Face mesh detector
     private val faceMeshOptions = FaceMeshDetectorOptions.Builder()
     private var faceMeshDetector: FaceMeshDetector? = null
+
+    /* Object Detection
+     * Contains some necessary variables for 3C object detection
+     */
+    private val imageProcess = ImageProcess()
+    private var objectDetectionScope: CoroutineScope? = null
+    val isElectronicDevicesDetected = MutableLiveData<String>("")
+    private var objectDetectionWindowSize = 10
+    private var totalFrame = 0
+    private var totalObjectDetectedFrame = 0
+    private var objectDetectedFrame = 0
+    private var objectNotDetectedFrame = 0
+    var isObjectDetectionShouldStart = false
 
     // Drowsiness detector
     val drowsinessDetector = DrowsinessDetectionHelper(context)
@@ -66,8 +92,33 @@ class ConcentrationAnalysisFaceProcessor(
     override fun analyze(imageProxy: ImageProxy) {
         val mediaImage = imageProxy.image
         if (mediaImage != null) {
+            // Image for ML kit
             val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
 
+            // bitmap for yolo
+            val inputBitmap = createInputBitmapForObjectDetection(imageProxy)
+
+            // Object Detection
+            if (!yolov5TFliteDetector.isDetecting) {
+                if (objectDetectionScope != null) {
+                    if (objectDetectionScope!!.isActive) {
+                        objectDetectionScope!!.launch {
+                            val results = yolov5TFliteDetector.detect(inputBitmap)
+                            setObjectDetectionGraphicOverlay(results, inputBitmap, imageProxy)
+                            if (results.size == 0) {
+                                isElectronicDevicesDetected.postValue("")
+                            } else {
+                                for (result in results) {
+                                    isElectronicDevicesDetected.postValue(result.name)
+                                }
+                            }
+                            electDevDetection()
+                        }
+                    }
+                }
+            }
+
+            // Face detection
             if (faceDetectionDetector != null) {
                 faceDetectionDetector!!.process(image)
                     .addOnSuccessListener { faces ->
@@ -99,7 +150,7 @@ class ConcentrationAnalysisFaceProcessor(
                         headPoseAttentivenessAnalysis(rotX.value ?: 0f, rotY.value ?: 0f)
                     }
                     .addOnFailureListener { e ->
-                        Log.e(TAG, "Face detector failed. $e")
+                        //Log.e(TAG, "Face detector failed. $e")
                     }
                     .addOnCompleteListener {
                         imageProxy.close()
@@ -108,6 +159,7 @@ class ConcentrationAnalysisFaceProcessor(
                 imageProxy.close()
             }
 
+            // Face mesh
             if (faceMeshDetector != null) {
                 faceMeshDetector!!.process(image)
                     .addOnSuccessListener { faceMeshes ->
@@ -129,12 +181,11 @@ class ConcentrationAnalysisFaceProcessor(
                         imageProxy.close()
                     }
                     .addOnFailureListener { e ->
-                        Log.e(TAG, "Face mesh failed. $e")
+                        //Log.e(TAG, "Face mesh failed. $e")
                     }
             } else {
                 imageProxy.close()
             }
-            //mediaImage.close()
         }
     }
 
@@ -144,6 +195,9 @@ class ConcentrationAnalysisFaceProcessor(
         }
         if (faceMeshDetector == null) {
             faceMeshDetector = FaceMeshDetection.getClient(faceMeshOptions.build())
+        }
+        if (objectDetectionScope == null) {
+            objectDetectionScope = CoroutineScope(Dispatchers.Default)
         }
     }
 
@@ -166,6 +220,54 @@ class ConcentrationAnalysisFaceProcessor(
             drowsinessDetector.resetDetector()
             drowsinessDetector.isDrowsinessAnalyzing = false
         }
+        if (objectDetectionScope != null) {
+            objectDetectionScope!!.cancel()
+            objectDetectionScope = null
+        }
+        yolov5TFliteDetector.resetState()
+    }
+
+    private fun createInputBitmapForObjectDetection(imageProxy: ImageProxy): Bitmap {
+        imageProcess.resetYuvBytes()
+        imageProcess.fillBytes(imageProxy.planes)
+        val rgbBytes = IntArray(imageProxy.width * imageProxy.height)
+        imageProcess.yuv420ToARGB8888(
+            imageProxy.width,
+            imageProxy.height,
+            imageProxy.planes[0].rowStride,
+            imageProxy.planes[1].rowStride,
+            imageProxy.planes[1].pixelStride,
+            rgbBytes
+        )
+        val originalBitmap =
+            Bitmap.createBitmap(imageProxy.width, imageProxy.height, Bitmap.Config.ARGB_8888)
+        originalBitmap.setPixels(
+            rgbBytes,
+            0,
+            imageProxy.width,
+            0,
+            0,
+            imageProxy.width,
+            imageProxy.height
+        )
+        val scaledBitmap = Bitmap.createScaledBitmap(
+            originalBitmap,
+            Yolov5TFliteDetector.INPUT_SIZE.width,
+            Yolov5TFliteDetector.INPUT_SIZE.height,
+            true
+        )
+        val matrix = Matrix().apply {
+            postRotate(imageProxy.imageInfo.rotationDegrees.toFloat())
+        }
+        return Bitmap.createBitmap(
+            scaledBitmap,
+            0,
+            0,
+            scaledBitmap.width,
+            scaledBitmap.height,
+            matrix,
+            true
+        )
     }
 
     private fun drowsinessDetection() {
@@ -235,6 +337,35 @@ class ConcentrationAnalysisFaceProcessor(
         }
     }
 
+    private fun electDevDetection() {
+        if (isObjectDetectionShouldStart) {
+            totalFrame++
+
+            if (isElectronicDevicesDetected.value != "") {
+                objectDetectedFrame++
+            } else {
+                objectNotDetectedFrame++
+            }
+
+            if (objectDetectedFrame + objectNotDetectedFrame == objectDetectionWindowSize) {
+                if (objectDetectedFrame > objectNotDetectedFrame) {
+                    totalObjectDetectedFrame += objectDetectedFrame
+                }
+                objectNotDetectedFrame = 0
+                objectDetectedFrame = 0
+            }
+        }
+    }
+    fun calculatePerDetected(): Float {
+        return totalObjectDetectedFrame.toFloat() / totalFrame.toFloat()
+    }
+    fun resetDetector() {
+        totalFrame = 0
+        totalObjectDetectedFrame = 0
+        objectNotDetectedFrame = 0
+        objectDetectedFrame = 0
+    }
+
     private fun setFaceDetectionGraphicOverlay(faces: List<Face>, image: InputImage) {
         if (isGraphicShow) {
             faceGraphicOverlay.setFace(faces)
@@ -246,6 +377,13 @@ class ConcentrationAnalysisFaceProcessor(
         if (isGraphicShow) {
             faceMeshGraphicOverlay.setFace(faceMeshes)
             faceMeshGraphicOverlay.setTransformationInfo(image.width, image.height, image.rotationDegrees)
+        }
+    }
+
+    private fun setObjectDetectionGraphicOverlay(objectDetectionResults: ArrayList<Results>, inputBitmap: Bitmap, imageProxy: ImageProxy) {
+        if (isGraphicShow) {
+            objectDetectionGraphicOverlay.setResult(objectDetectionResults)
+            objectDetectionGraphicOverlay.setTransformationInfo(inputBitmap.width, inputBitmap.height, imageProxy)
         }
     }
 

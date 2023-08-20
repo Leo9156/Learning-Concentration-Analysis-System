@@ -55,6 +55,9 @@ class HeadPoseFaceDetectionProcessor: ImageAnalysis.Analyzer {
     private val faceMeshOptions = FaceMeshDetectorOptions.Builder()
     private var faceMeshDetector: FaceMeshDetector? = null
 
+    // Flags
+    private var isFaceDetectionCompleted = false
+    private var isFaceMeshCompleted = false
 
     @androidx.annotation.OptIn(androidx.camera.core.ExperimentalGetImage::class)
     override fun analyze(imageProxy: ImageProxy) {
@@ -101,7 +104,10 @@ class HeadPoseFaceDetectionProcessor: ImageAnalysis.Analyzer {
                         Log.e(TAG, "Face detector failed. $e")
                     }
                     .addOnCompleteListener {
-                        imageProxy.close()
+                        isFaceDetectionCompleted = true
+                        if (isFaceMeshCompleted) {
+                            imageProxy.close()
+                        }
                     }
 
                 if (faceMeshDetector != null) {
@@ -137,7 +143,10 @@ class HeadPoseFaceDetectionProcessor: ImageAnalysis.Analyzer {
                             Log.e(TAG, "Face mesh detector failed. $e")
                         }
                         .addOnCompleteListener {
-                            imageProxy.close()
+                            isFaceMeshCompleted = true
+                            if (isFaceDetectionCompleted) {
+                                imageProxy.close()
+                            }
                         }
                 }
             } else {
@@ -200,6 +209,8 @@ class HeadPoseFaceDetectionProcessor: ImageAnalysis.Analyzer {
         totalFrame = 0
         totalEarFrame = 0
         prevEAR = 0f
+        isFaceDetectionCompleted = false
+        isFaceMeshCompleted = false
     }
 
     fun close() {

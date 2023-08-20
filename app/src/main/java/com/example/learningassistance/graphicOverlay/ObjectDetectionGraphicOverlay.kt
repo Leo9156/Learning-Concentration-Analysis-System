@@ -6,20 +6,21 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
 import android.util.AttributeSet
-import android.util.Log
-import android.view.View
-import com.google.mediapipe.tasks.vision.objectdetector.ObjectDetectorResult
-import kotlin.math.min
+import androidx.camera.core.ImageProxy
+import com.example.learningassistance.detection.concentration.yolov5.Results
+import com.example.learningassistance.detection.concentration.yolov5.Yolov5TFliteDetector
 
 class ObjectDetectionGraphicOverlay(
     context: Context,
     attrs: AttributeSet
 ): GraphicOverlay(context, attrs) {
 
-    private var objectDetectionResult: ObjectDetectorResult? = null
+    private var objectDetectionResult: ArrayList<Results>? = null
+    private var viewWidth = 0
+    private var viewHeight = 0
 
-    fun setResult(result: ObjectDetectorResult) {
-        this.objectDetectionResult = result
+    fun setResult(results: ArrayList<Results>) {
+        this.objectDetectionResult = results
         postInvalidate()
     }
 
@@ -35,34 +36,42 @@ class ObjectDetectionGraphicOverlay(
         strokeWidth = 8.0f
     }
 
-    fun setTransformationInfo(imageWidth: Int, imageHeight: Int) {
-        this.setImageInfo(imageWidth, imageHeight)
-
+    fun setTransformationInfo(imageWidth: Int, imageHeight: Int, imageProxy: ImageProxy) {
+        setImageInfo(imageWidth, imageHeight)
+        this.viewWidth = imageProxy.width
+        this.viewHeight = imageProxy.height
         this.setTransformationElement()
     }
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
-        objectDetectionResult?.let {
-            for (detection in it.detections()) {
-                val boundingBox = detection.boundingBox()
-                val x = translateX(boundingBox.centerX())
-                val y = translateY(boundingBox.centerY())
+        objectDetectionResult?.let { results ->
+            for (result in results) {
+                val loc = result.loc
+                val label = result.name
 
-                val top = y - scale(boundingBox.height() / 2.0f)
-                val left = x - scale(boundingBox.width() / 2.0f)
-                val bottom = y + scale(boundingBox.height() / 2.0f)
-                val right = x + scale(boundingBox.width() / 2.0f)
+                val imgScaleX: Float = viewWidth.toFloat() / Yolov5TFliteDetector.INPUT_SIZE.width
+                val imgScaleY: Float = viewHeight.toFloat() / Yolov5TFliteDetector.INPUT_SIZE.height
+                val ivScaleX: Float = width / viewWidth.toFloat()
+                val ivScaleY: Float = height / viewHeight.toFloat()
 
-                // Draw bounding box around detected objects
-                if (detection.categories()[0].categoryName() == "cell phone") {
+                var left: Float = (imgScaleX * loc.left) * ivScaleX
+                val top: Float = (imgScaleY * loc.top) * ivScaleY
+                var right: Float = (imgScaleX * loc.right) * ivScaleX
+                val bottom: Float = (imgScaleY * loc.bottom) * ivScaleY
+                val centerX = width / 2f
+                val distLeft = left - centerX
+                left -= 2f * distLeft
+                val distRight = right - centerX
+                right -= 2f * distRight
+
+                if (label.equals("cell phone")) {
                     canvas.drawRect(left, top, right, bottom, cellPhonePaint)
                 } else {
                     canvas.drawRect(left, top, right, bottom, tabletPaint)
                 }
             }
-
         }
     }
 }

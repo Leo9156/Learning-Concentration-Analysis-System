@@ -172,14 +172,14 @@ class ConcentrationAnalysisObjectProcessor(
     }
 
     private fun setObjectDetectionGraphicOverlay(result: ObjectDetectorResult, input: MPImage?) {
-        if (isGraphicShow) {
+        /*if (isGraphicShow) {
             objectDetectionGraphicOverlay.setResult(result)
             if (input != null) {
                 objectDetectionGraphicOverlay.setTransformationInfo(input.width, input.height)
             } else {
                 Log.e(TAG, "The input image to the ObjectDetectionGraphicOverlay is null.")
             }
-        }
+        }*/
     }
 
     fun start() {

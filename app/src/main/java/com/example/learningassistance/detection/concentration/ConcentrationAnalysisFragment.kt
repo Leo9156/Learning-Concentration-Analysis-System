@@ -23,6 +23,7 @@ import com.example.learningassistance.MainActivity
 import com.example.learningassistance.R
 import com.example.learningassistance.database.TaskDatabase
 import com.example.learningassistance.databinding.FragmentConcentrationAnalysisBinding
+import com.example.learningassistance.detection.concentration.yolov5.Yolov5TFliteDetector
 import java.util.concurrent.Executors
 
 class ConcentrationAnalysisFragment : Fragment() {
@@ -40,7 +41,7 @@ class ConcentrationAnalysisFragment : Fragment() {
     private var concentrationAnalysisViewModel: ConcentrationAnalysisViewModel? = null
 
     // Concentration analysis processor
-    private var concentrationAnalysisFaceProcessor: ConcentrationAnalysisFaceProcessor? = null
+    private var concentrationAnalysisFaceProcessor: ConcentrationAnalysisModelProcessor? = null
     private var concentrationAnalysisObjectProcessor: ConcentrationAnalysisObjectProcessor? = null
 
     override fun onAttach(context: Context) {
@@ -54,7 +55,7 @@ class ConcentrationAnalysisFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        _binding = FragmentConcentrationAnalysisBinding.inflate(inflater, container, false)
+        _binding = com.example.learningassistance.databinding.FragmentConcentrationAnalysisBinding.inflate(inflater, container, false)
         val view = binding.root
 
         // Get the basic head rotation
@@ -65,29 +66,38 @@ class ConcentrationAnalysisFragment : Fragment() {
         val application = requireActivity().application
         val dao = TaskDatabase.getInstance(application).taskDao
 
+        // Yolov5 object detector
+        val yolov5TFliteDetector = Yolov5TFliteDetector(safeContext)
+        yolov5TFliteDetector.initModel()
+        yolov5TFliteDetector.addGPUDelegate()
+        Log.v(TAG, "yolov5 model: ${yolov5TFliteDetector.objectDetectionModel}")
+
         // Initialize face processors
         if (concentrationAnalysisFaceProcessor == null) {
             concentrationAnalysisFaceProcessor =
-                ConcentrationAnalysisFaceProcessor(
+                ConcentrationAnalysisModelProcessor(
                     safeContext,
+                    yolov5TFliteDetector,
                     headEulerOffsetX,
                     headEulerOffsetY,
                     avgEAR * 0.7f,
                     binding.faceDetectionGraphicOverlay,
-                    binding.faceMeshGraphicOverlay)
+                    binding.faceMeshGraphicOverlay,
+                    binding.objectDetectionGraphicOverlay
+                )
         }
         concentrationAnalysisFaceProcessor!!.start()
 
         Log.v(TAG, "threshold: ${avgEAR * 0.7f}")
 
         // Initialize object processor
-        if (concentrationAnalysisObjectProcessor == null) {
+        /*if (concentrationAnalysisObjectProcessor == null) {
             concentrationAnalysisObjectProcessor =
                 ConcentrationAnalysisObjectProcessor(
                     safeContext,
                     binding.objectDetectionGraphicOverlay)
         }
-        concentrationAnalysisObjectProcessor!!.start()
+        concentrationAnalysisObjectProcessor!!.start()*/
 
         // Create the view model
         if (concentrationAnalysisViewModel == null) {
@@ -97,7 +107,7 @@ class ConcentrationAnalysisFragment : Fragment() {
                 dao,
                 taskId,
                 concentrationAnalysisFaceProcessor!!,
-                concentrationAnalysisObjectProcessor!!
+                //concentrationAnalysisObjectProcessor!!
             )
             concentrationAnalysisViewModel = ViewModelProvider(
                 requireActivity(),
@@ -120,7 +130,7 @@ class ConcentrationAnalysisFragment : Fragment() {
         // Update processors of the view model
         concentrationAnalysisViewModel!!.updateProcessor(
             concentrationAnalysisFaceProcessor!!,
-            concentrationAnalysisObjectProcessor!!
+            //concentrationAnalysisObjectProcessor!!
         )
 
         // Detection card -> face
@@ -195,7 +205,7 @@ class ConcentrationAnalysisFragment : Fragment() {
         })
 
         // Detection card -> electronic devices
-        concentrationAnalysisObjectProcessor!!.isElectronicDevicesDetected.observe(viewLifecycleOwner, Observer {
+        concentrationAnalysisFaceProcessor!!.isElectronicDevicesDetected.observe(viewLifecycleOwner, Observer {
             if (it == "") {
                 binding.detectionCardElectronicDevicesText.text = getString(R.string.electronic_devices_not_detected)
                 binding.detectionCardElectronicDevicesText.setTextColor(ContextCompat.getColor(safeContext, R.color.green))
@@ -210,7 +220,7 @@ class ConcentrationAnalysisFragment : Fragment() {
         // Setting switch
         binding.detectionGraphicSettingSwitch.setOnCheckedChangeListener { _, isChecked ->
             concentrationAnalysisFaceProcessor!!.isGraphicShow = isChecked
-            concentrationAnalysisObjectProcessor!!.isGraphicShow = isChecked
+            //concentrationAnalysisObjectProcessor!!.isGraphicShow = isChecked
 
             if (isChecked) {
                 binding.faceDetectionGraphicOverlay.visibility = View.VISIBLE
@@ -280,9 +290,9 @@ class ConcentrationAnalysisFragment : Fragment() {
                 if (it) {
                     // Close the models
                     concentrationAnalysisFaceProcessor!!.close()
-                    cameraExecutor.execute {
+                    /*cameraExecutor.execute {
                         concentrationAnalysisObjectProcessor!!.close()
-                    }
+                    }*/
                     // pause the camera
                     cameraProvider.unbindAll()
                     // Stop the timer
@@ -290,7 +300,7 @@ class ConcentrationAnalysisFragment : Fragment() {
                 } else {
                     // Start the models
                     concentrationAnalysisFaceProcessor!!.start()
-                    concentrationAnalysisObjectProcessor!!.start()
+                    //concentrationAnalysisObjectProcessor!!.start()
                     // continue the camera
                     startCamera()
                     // Start the timer
@@ -314,9 +324,9 @@ class ConcentrationAnalysisFragment : Fragment() {
                 mediaPlayer.start()
 
                 concentrationAnalysisFaceProcessor!!.close()
-                cameraExecutor.execute {
+                /*cameraExecutor.execute {
                     concentrationAnalysisObjectProcessor!!.close()
-                }
+                }*/
                 concentrationAnalysisViewModel!!.isFinished.value = false
                 this.findNavController().navigate(R.id.action_concentrationAnalysisFragment_to_analysisResultsFragment)
             }
@@ -364,19 +374,19 @@ class ConcentrationAnalysisFragment : Fragment() {
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .build()
 
-            val imageAnalysisRGB = ImageAnalysis.Builder()
+            /*val imageAnalysisRGB = ImageAnalysis.Builder()
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
-                .build()
+                .build()*/
 
             imageAnalysisYUV.setAnalyzer(
                 cameraExecutor,
                 concentrationAnalysisFaceProcessor!!
             )
-            imageAnalysisRGB.setAnalyzer(
+            /*imageAnalysisRGB.setAnalyzer(
                 cameraExecutor,
                 concentrationAnalysisObjectProcessor!!
-            )
+            )*/
 
             try {
                 cameraProvider.unbindAll()
@@ -384,7 +394,7 @@ class ConcentrationAnalysisFragment : Fragment() {
                     this,
                     cameraSelector,
                     imageAnalysisYUV,
-                    imageAnalysisRGB,
+                    //imageAnalysisRGB,
                     preview)
             } catch (exc: Exception) {
                 Log.e(TAG, "Use case binding failed")
@@ -395,9 +405,9 @@ class ConcentrationAnalysisFragment : Fragment() {
     override fun onPause() {
         super.onPause()
         concentrationAnalysisFaceProcessor!!.close()
-        cameraExecutor.execute {
+        /*cameraExecutor.execute {
             concentrationAnalysisObjectProcessor!!.close()
-        }
+        }*/
         concentrationAnalysisViewModel!!.isTimerShouldStart.value = false
     }
 
@@ -405,7 +415,7 @@ class ConcentrationAnalysisFragment : Fragment() {
         super.onResume()
         if (concentrationAnalysisViewModel!!.isPaused.value == null) {
             concentrationAnalysisFaceProcessor!!.start()
-            concentrationAnalysisObjectProcessor!!.start()
+            //concentrationAnalysisObjectProcessor!!.start()
             if (concentrationAnalysisViewModel!!.task.value != null) {
                 concentrationAnalysisViewModel!!.isTimerShouldStart.value = true
             }

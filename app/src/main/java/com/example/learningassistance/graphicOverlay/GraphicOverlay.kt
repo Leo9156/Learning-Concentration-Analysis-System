@@ -34,9 +34,6 @@ open class GraphicOverlay constructor(
     /**
      * Sets the source information of the image being processed by detectors,
      * which informs how to transform image coordinates later.
-     *
-     * imageWidth is the width of the image sent to ML Kit detectors
-     * imageHeight is the height of the image sent to ML Kit detectors
      */
     protected fun setImageInfo(imageWidth: Int, imageHeight: Int) {
         this.imageWidth = imageWidth

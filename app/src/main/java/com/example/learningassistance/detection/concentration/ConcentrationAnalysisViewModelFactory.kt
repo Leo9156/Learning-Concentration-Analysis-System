@@ -9,12 +9,12 @@ class ConcentrationAnalysisViewModelFactory(
     private val context: Context,
     private val dao: TaskDao,
     private val id: Long,
-    private var faceProcessor: ConcentrationAnalysisFaceProcessor,
-    private var objectProcessor: ConcentrationAnalysisObjectProcessor,
+    private var faceProcessor: ConcentrationAnalysisModelProcessor,
+    //private var objectProcessor: ConcentrationAnalysisObjectProcessor,
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(ConcentrationAnalysisViewModel::class.java)) {
-            return ConcentrationAnalysisViewModel(context, dao, id, faceProcessor, objectProcessor) as T
+            return ConcentrationAnalysisViewModel(context, dao, id, faceProcessor/*, objectProcessor*/) as T
         } else {
             throw IllegalArgumentException("Unknown ViewModel")
         }

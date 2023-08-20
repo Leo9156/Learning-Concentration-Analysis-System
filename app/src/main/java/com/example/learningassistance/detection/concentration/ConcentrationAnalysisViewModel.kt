@@ -17,8 +17,8 @@ class ConcentrationAnalysisViewModel(
     private val context: Context,
     private val dao: TaskDao,
     private val id: Long,
-    private var faceProcessor: ConcentrationAnalysisFaceProcessor,
-    private var objectProcessor: ConcentrationAnalysisObjectProcessor,
+    private var faceProcessor: ConcentrationAnalysisModelProcessor,
+    //private var objectProcessor: ConcentrationAnalysisObjectProcessor,
 ) : ViewModel() {
 
     // task
@@ -265,28 +265,28 @@ class ConcentrationAnalysisViewModel(
     }
 
     fun electronicDevicesDetection(){
-        electronicDevicesTime += (30000 * objectProcessor.calculatePerDetected()).toLong()
+        electronicDevicesTime += (30000 * faceProcessor.calculatePerDetected()).toLong()
     }
 
     private fun resetDetector() {
         faceProcessor.noFaceDetector.resetDetector()
         faceProcessor.drowsinessDetector.resetDetector()
         faceProcessor.headPoseAttentionAnalyzer.resetAnalyzer()
-        objectProcessor.resetDetector()
+        faceProcessor.resetDetector()
     }
 
     private fun startConcentrationAnalysis() {
         faceProcessor.isNoFaceDetectionShouldStart = true
         faceProcessor.isDrowsinessDetectionShouldStart = true
         faceProcessor.isHeadPoseAnalysisShouldStart = true
-        objectProcessor.isObjectDetectionShouldStart = true
+        faceProcessor.isObjectDetectionShouldStart = true
     }
 
     private fun stopConcentrationAnalysis() {
         faceProcessor.isNoFaceDetectionShouldStart = false
         faceProcessor.isDrowsinessDetectionShouldStart = false
         faceProcessor.isHeadPoseAnalysisShouldStart = false
-        objectProcessor.isObjectDetectionShouldStart = false
+        faceProcessor.isObjectDetectionShouldStart = false
     }
 
     private fun updateTask() {
@@ -305,9 +305,9 @@ class ConcentrationAnalysisViewModel(
         }
     }
 
-    fun updateProcessor(newFace: ConcentrationAnalysisFaceProcessor, newObject: ConcentrationAnalysisObjectProcessor) {
+    fun updateProcessor(newFace: ConcentrationAnalysisModelProcessor, /*newObject: ConcentrationAnalysisObjectProcessor*/) {
         this.faceProcessor = newFace
-        this.objectProcessor = newObject
+        //this.objectProcessor = newObject
     }
 
     companion object {
