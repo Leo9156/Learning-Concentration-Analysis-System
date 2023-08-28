@@ -195,7 +195,7 @@ class ConcentrationAnalysisViewModel(
             }
             return true
         }
-        else if(faceProcessor.drowsinessDetector.getTotalYawningPeriod()>5000) {
+        else if(faceProcessor.drowsinessDetector.getOpenMouthNumber()>=faceProcessor.drowsinessDetector.getOpenMouthThreshold()) {
             fatigueTime += 30000
             if (!isAlertDialogShowing) {
                 isAlertDialogShowing = true

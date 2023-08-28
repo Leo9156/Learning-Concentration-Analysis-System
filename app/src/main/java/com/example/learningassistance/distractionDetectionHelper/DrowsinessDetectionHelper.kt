@@ -57,7 +57,7 @@ class DrowsinessDetectionHelper(private val context: Context) {
     */
     //declare variables
     private var YawningThreshold = 0.2
-    private var DetectionYawningPeriodMs : Long = 5000
+    private var DetectionYawningPeriodMs : Long = 3000
     private var YawningDetectionDuration : Long = 0
     private var startYawningTimerMs = System.currentTimeMillis()
     private var endYawningTimerMs = System.currentTimeMillis()
@@ -66,12 +66,19 @@ class DrowsinessDetectionHelper(private val context: Context) {
     //mouth open ratio
     private var yawningMOR = 0.0f
     private var OpenMouthCount = 0
+    private var OpenMouthThreshold = 2
     /*
     and some method
     setYawningThreshold
     getYawningThreshold
     getMOR
      */
+    fun getOpenMouthThreshold(): Int {
+        return this.OpenMouthThreshold
+    }
+    fun setOpenMouthThreshold(new: Int) {
+        this.OpenMouthThreshold = new
+    }
     fun getTotalYawningPeriod(): Long {
         return this.totalYawningPeriod
     }
@@ -94,7 +101,7 @@ class DrowsinessDetectionHelper(private val context: Context) {
         this.OpenMouthCount=0
     }
     fun getOpenMouthNumber():Int {
-        return OpenMouthCount
+        return this.OpenMouthCount
     }
     fun setYawningThreshold(threshold: Double) {
         this.YawningThreshold = threshold

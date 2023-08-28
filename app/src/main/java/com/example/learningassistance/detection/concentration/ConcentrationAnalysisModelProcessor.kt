@@ -293,16 +293,16 @@ class ConcentrationAnalysisModelProcessor(
                 /*
                 *       if yawning is false set to true and start timer
                 * */
-                drowsinessDetector.increaseOpenMouthNumber()
             }
             else {
                 if(drowsinessDetector.getYawningStatus())
                 {
                     drowsinessDetector.setYawningStatus(false)
                     drowsinessDetector.endYawningTimer()
-                    drowsinessDetector.calculateYawningDetectDuration()
-                    if(drowsinessDetector.getYawningDetectionDuration()>3000) {
-                        drowsinessDetector.addTotalYawningPeriod()
+                    //drowsinessDetector.calculateYawningDetectDuration()
+                    if(drowsinessDetector.getYawningDetectionDuration()>=drowsinessDetector.getDetectionYawningPeriodMs()) {
+                        //drowsinessDetector.addTotalYawningPeriod()
+                        drowsinessDetector.increaseOpenMouthNumber()
                     }
                 }
                 /*
