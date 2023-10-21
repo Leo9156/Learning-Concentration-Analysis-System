@@ -46,7 +46,6 @@ class ConcentrationAnalysisModelProcessor(
     private val faceDetectionOptions = FaceDetectorOptions.Builder()
         .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
         .setClassificationMode(FaceDetectorOptions.CLASSIFICATION_MODE_ALL)
-        .setMinFaceSize(0.8f)
         .build()
     private var faceDetectionDetector: FaceDetector? = null
 

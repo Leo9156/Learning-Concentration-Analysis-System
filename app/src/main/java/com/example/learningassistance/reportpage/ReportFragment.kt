@@ -62,20 +62,43 @@ class ReportFragment : Fragment() {
                 binding.dayLearningTime.text = String.format(getString(R.string.learning_time_per_day), viewModel.avgLearningTimeMin.toInt())
 
                 // Evaluation card
+//                when {
+//                    viewModel.avgAttentionScore >= 90f -> {
+//                        binding.tvEvaluation.text = getString(R.string.excellent)
+//                        binding.evaluationIcon.setImageResource(R.drawable.ic_congratulation)
+//                    }
+//                    viewModel.avgAttentionScore >= 80f -> {
+//                        binding.tvEvaluation.text = getString(R.string.great)
+//                        binding.evaluationIcon.setImageResource(R.drawable.ic_great)
+//                    }
+//                    viewModel.avgAttentionScore >= 60f -> {
+//                        binding.tvEvaluation.text = getString(R.string.so_so)
+//                        binding.evaluationIcon.setImageResource(R.drawable.ic_soso)
+//                    }
+//                    viewModel.avgAttentionScore >= 40f -> {
+//                        binding.tvEvaluation.text = getString(R.string.should_be_improved)
+//                        binding.evaluationIcon.setImageResource(R.drawable.ic_improved)
+//                    }
+//                    else -> {
+//                        binding.tvEvaluation.text = getString(R.string.bad)
+//                        binding.evaluationIcon.setImageResource(R.drawable.ic_sad)
+//                    }
+//                }
+
                 when {
-                    viewModel.avgAttentionScore >= 90f -> {
+                    viewModel.avgAttentionTime >= 240 -> {
                         binding.tvEvaluation.text = getString(R.string.excellent)
                         binding.evaluationIcon.setImageResource(R.drawable.ic_congratulation)
                     }
-                    viewModel.avgAttentionScore >= 80f -> {
+                    viewModel.avgAttentionScore >= 180 -> {
                         binding.tvEvaluation.text = getString(R.string.great)
                         binding.evaluationIcon.setImageResource(R.drawable.ic_great)
                     }
-                    viewModel.avgAttentionScore >= 60f -> {
+                    viewModel.avgAttentionScore >= 60 -> {
                         binding.tvEvaluation.text = getString(R.string.so_so)
                         binding.evaluationIcon.setImageResource(R.drawable.ic_soso)
                     }
-                    viewModel.avgAttentionScore >= 40f -> {
+                    viewModel.avgAttentionScore >= 30 -> {
                         binding.tvEvaluation.text = getString(R.string.should_be_improved)
                         binding.evaluationIcon.setImageResource(R.drawable.ic_improved)
                     }

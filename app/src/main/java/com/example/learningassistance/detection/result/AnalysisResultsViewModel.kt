@@ -27,5 +27,8 @@ class AnalysisResultsViewModel(private val dao: TaskDao, private val id: Long) :
         lookAroundPercent = String.format("%.2f", 100f * (task.value!!.lookAroundTimeMs.toFloat() / (task.value!!.taskDurationMin * 60000).toFloat())).toFloat()
         electDevPercent = String.format("%.2f", 100f * (task.value!!.electronicDevicesTimeMs.toFloat() / (task.value!!.taskDurationMin * 60000).toFloat())).toFloat()
         attentionPercent = String.format("%.2f", 100f - (noFacePercent + drowsinessPercent + lookAroundPercent + electDevPercent)).toFloat()
+        if (attentionPercent < 0) {
+            attentionPercent = 0f
+        }
     }
 }

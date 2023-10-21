@@ -49,6 +49,8 @@ class ReportViewModel(private val dao: TaskDao) : ViewModel() {
             avgLearningTimeMin = String.format("%.1f", avgLearningTimeMin / tasks.value!!.size.toFloat()).toFloat()
         }
 
+        avgAttentionTime = (avgAttentionScore / 100) * avgLearningTimeMin
+
         calculateAvgPerDay()
     }
 
