@@ -85,18 +85,26 @@ class HeadPoseFaceDetectionProcessor: ImageAnalysis.Analyzer {
                                 hasToRestart.value = true
                             }
                         } else {
-                            for (face in faces) {
+                            var maxFaceIndex = 0
+                            for (i in faces.indices) {
                                 // Change the state of analysis
                                 this.canAnalysisStart = true
                                 this.isFaceDetected.value = true
 
-                                // Get the rotation degrees of head
-                                rotX.value = face.headEulerAngleX
-                                rotY.value = face.headEulerAngleY
-
-                                if (isAnalysisStarting) {
-                                    sumHeadEulerAngle()
+                                // Find the primary face
+                                val maxFaceArea = faces[maxFaceIndex].boundingBox.width() * faces[maxFaceIndex].boundingBox.height()
+                                val curFaceArea = faces[i].boundingBox.width() * faces[i].boundingBox.height()
+                                if (maxFaceArea < curFaceArea) {
+                                    maxFaceIndex = i
                                 }
+                            }
+
+                            // Get the rotation degrees of head
+                            rotX.value = faces[maxFaceIndex].headEulerAngleX
+                            rotY.value = faces[maxFaceIndex].headEulerAngleY
+
+                            if (isAnalysisStarting) {
+                                sumHeadEulerAngle()
                             }
                         }
                     }
@@ -129,12 +137,18 @@ class HeadPoseFaceDetectionProcessor: ImageAnalysis.Analyzer {
                                         hasToRestart.value = true
                                     }
                                 } else {
-                                    for (faceMesh in faceMeshes) {
-                                        EAR.value = calculateEAR(faceMesh.allPoints)
-                                        checkDifferencePercent(EAR.value!!)
-                                        if (isAnalysisStarting) {
-                                            prevEAR = EAR.value!!
+                                    var maxFaceIndex = 0
+                                    for (i in faceMeshes.indices) {
+                                        val maxFaceArea = faceMeshes[maxFaceIndex].boundingBox.width() * faceMeshes[maxFaceIndex].boundingBox.height()
+                                        val curFaceArea = faceMeshes[i].boundingBox.width() * faceMeshes[i].boundingBox.height()
+                                        if (curFaceArea > maxFaceArea) {
+                                            maxFaceIndex = i
                                         }
+                                    }
+                                    EAR.value = calculateEAR(faceMeshes[maxFaceIndex].allPoints)
+                                    checkDifferencePercent(EAR.value!!)
+                                    if (isAnalysisStarting) {
+                                        prevEAR = EAR.value!!
                                     }
                                 }
                             }

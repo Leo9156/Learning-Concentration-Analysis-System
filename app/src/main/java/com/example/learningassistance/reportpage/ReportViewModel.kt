@@ -13,6 +13,7 @@ import java.time.LocalDate
 class ReportViewModel(private val dao: TaskDao) : ViewModel() {
     var avgAttentionScore = 0f
     var avgLearningTimeMin = 0f
+    var avgAttentionTime = 0f
     var avgAttentionScoreMon = 0f
     var monTaskCounter = 0
     var avgAttentionScoreTue = 0f

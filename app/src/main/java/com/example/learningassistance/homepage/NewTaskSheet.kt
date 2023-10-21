@@ -66,6 +66,13 @@ class NewTaskSheet(private var task: Task?) : BottomSheetDialogFragment() {
                         task!!.taskName = binding.taskTitle.text.toString()
                         task!!.taskDescription = binding.taskDiscription.text.toString()
                         task!!.taskDurationMin = (binding.taskTimeHours.value * 60 + binding.taskTimeMinutes.value)
+                        // Reset the task original state
+                        task!!.taskTimeLeftMs = (task!!.taskDurationMin * 60000).toLong()
+                        task!!.taskCompletePercentage = 0
+                        task!!.electronicDevicesTimeMs = 0L
+                        task!!.lookAroundTimeMs = 0L
+                        task!!.fatigueTimeMs = 0L
+                        task!!.noFaceTimeMs = 0L
                         taskViewModel.updateTask(task!!)
                         dismiss()
                     }

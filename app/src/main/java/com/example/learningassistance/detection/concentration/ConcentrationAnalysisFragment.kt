@@ -42,7 +42,7 @@ class ConcentrationAnalysisFragment : Fragment() {
 
     // Concentration analysis processor
     private var concentrationAnalysisFaceProcessor: ConcentrationAnalysisModelProcessor? = null
-    private var concentrationAnalysisObjectProcessor: ConcentrationAnalysisObjectProcessor? = null
+    // private var concentrationAnalysisObjectProcessor: ConcentrationAnalysisObjectProcessor? = null
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -423,7 +423,6 @@ class ConcentrationAnalysisFragment : Fragment() {
         concentrationAnalysisFaceProcessor!!.headEulerOffsetX = ConcentrationAnalysisFragmentArgs.fromBundle(requireArguments()).basicHeadOffsetX
         concentrationAnalysisFaceProcessor!!.headEulerOffsetY = ConcentrationAnalysisFragmentArgs.fromBundle(requireArguments()).basicHeadOffsetY
         concentrationAnalysisFaceProcessor!!.closedEyesThreshold = (ConcentrationAnalysisFragmentArgs.fromBundle(requireArguments()).avgEAR) * 0.7f
-
     }
 
     override fun onDestroyView() {

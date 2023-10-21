@@ -3,6 +3,7 @@ package com.example.learningassistance.detection.concentration
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Matrix
+import android.util.Log
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
 import androidx.lifecycle.MutableLiveData
@@ -40,12 +41,12 @@ class ConcentrationAnalysisModelProcessor(
     private val faceMeshGraphicOverlay: FaceMeshGraphicOverlay,
     private val objectDetectionGraphicOverlay: ObjectDetectionGraphicOverlay,
     ) : ImageAnalysis.Analyzer {
-    private var cnt = 0
 
     // Face detector
     private val faceDetectionOptions = FaceDetectorOptions.Builder()
         .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
         .setClassificationMode(FaceDetectorOptions.CLASSIFICATION_MODE_ALL)
+        .setMinFaceSize(0.8f)
         .build()
     private var faceDetectionDetector: FaceDetector? = null
 
@@ -85,7 +86,6 @@ class ConcentrationAnalysisModelProcessor(
     var isNoFaceDetectionShouldStart = false
     var isDrowsinessDetectionShouldStart = false
     var isHeadPoseAnalysisShouldStart = false
-    private var isAlertDialogShowing = false
     var isGraphicShow = false
 
     @androidx.annotation.OptIn(androidx.camera.core.ExperimentalGetImage::class)
@@ -118,12 +118,9 @@ class ConcentrationAnalysisModelProcessor(
                 }
             }
 
-            // Face detection
             if (faceDetectionDetector != null) {
                 faceDetectionDetector!!.process(image)
                     .addOnSuccessListener { faces ->
-                        setFaceDetectionGraphicOverlay(faces, image)
-
                         if (faces.size == 0) {
                             // Change state
                             isFaceDetected.value = false
@@ -131,16 +128,24 @@ class ConcentrationAnalysisModelProcessor(
                             // rotation degree
                             rotX.value = null
                             rotY.value = null
-
+                            setFaceDetectionGraphicOverlay(null, image)
                         } else {
                             // Change state
                             isFaceDetected.value = true
 
-                            for (face in faces) {
-                                // Calculate the normalized rotation degrees
-                                rotX.value = (face.headEulerAngleX - headEulerOffsetX)
-                                rotY.value = (face.headEulerAngleY - headEulerOffsetY)
+                            // Get the primary face info
+                            var maxFaceIndex = 0
+                            for (i in faces.indices) {
+                                val maxFaceArea = faces[maxFaceIndex].boundingBox.width() * faces[maxFaceIndex].boundingBox.height()
+                                val curFaceArea = faces[i].boundingBox.width() * faces[i].boundingBox.height()
+                                if (maxFaceArea < curFaceArea) {
+                                    maxFaceIndex = i
+                                }
                             }
+                            // Calculate the normalized rotation degrees
+                            rotX.value = (faces[maxFaceIndex].headEulerAngleX - headEulerOffsetX)
+                            rotY.value = (faces[maxFaceIndex].headEulerAngleY - headEulerOffsetY)
+                            setFaceDetectionGraphicOverlay(faces[maxFaceIndex], image)
                         }
 
                         // No face detection
@@ -150,7 +155,7 @@ class ConcentrationAnalysisModelProcessor(
                         headPoseAttentivenessAnalysis(rotX.value ?: 0f, rotY.value ?: 0f)
                     }
                     .addOnFailureListener { e ->
-                        //Log.e(TAG, "Face detector failed. $e")
+                        Log.e(TAG, "Face detector failed. $e")
                     }
                     .addOnCompleteListener {
                         imageProxy.close()
@@ -163,16 +168,22 @@ class ConcentrationAnalysisModelProcessor(
             if (faceMeshDetector != null) {
                 faceMeshDetector!!.process(image)
                     .addOnSuccessListener { faceMeshes ->
-                        setFaceMeshGraphicOverlay(faceMeshes, image)
-
                         if (faceMeshes.size == 0) {
                             // Change state
                             drowsinessDetector.resetEAR()
+                            setFaceMeshGraphicOverlay(null, image)
                         } else {
-                            for (faceMesh in faceMeshes) {
-                                drowsinessDetector.calculateEAR(faceMesh.allPoints)
-                                drowsinessDetector.calculateMOR(faceMesh.allPoints)
+                            var maxFaceIndex = 0
+                            for (i in faceMeshes.indices) {
+                                val maxFaceArea = faceMeshes[maxFaceIndex].boundingBox.width() * faceMeshes[maxFaceIndex].boundingBox.height()
+                                val curFaceArea = faceMeshes[i].boundingBox.width() * faceMeshes[i].boundingBox.height()
+                                if (curFaceArea > maxFaceArea) {
+                                    maxFaceIndex = i
+                                }
                             }
+                            drowsinessDetector.calculateEAR(faceMeshes[maxFaceIndex].allPoints)
+                            drowsinessDetector.calculateMOR(faceMeshes[maxFaceIndex].allPoints)
+                            setFaceMeshGraphicOverlay(faceMeshes[maxFaceIndex], image)
                         }
 
                         drowsinessDetection()
@@ -181,7 +192,7 @@ class ConcentrationAnalysisModelProcessor(
                         imageProxy.close()
                     }
                     .addOnFailureListener { e ->
-                        //Log.e(TAG, "Face mesh failed. $e")
+                        Log.e(TAG, "Face mesh failed. $e")
                     }
             } else {
                 imageProxy.close()
@@ -366,16 +377,16 @@ class ConcentrationAnalysisModelProcessor(
         objectDetectedFrame = 0
     }
 
-    private fun setFaceDetectionGraphicOverlay(faces: List<Face>, image: InputImage) {
+    private fun setFaceDetectionGraphicOverlay(face: Face?, image: InputImage) {
         if (isGraphicShow) {
-            faceGraphicOverlay.setFace(faces)
+            faceGraphicOverlay.setFace(face)
             faceGraphicOverlay.setTransformationInfo(image.width, image.height, image.rotationDegrees)
         }
     }
 
-    private fun setFaceMeshGraphicOverlay(faceMeshes: MutableList<FaceMesh>, image: InputImage) {
+    private fun setFaceMeshGraphicOverlay(faceMesh: FaceMesh?, image: InputImage) {
         if (isGraphicShow) {
-            faceMeshGraphicOverlay.setFace(faceMeshes)
+            faceMeshGraphicOverlay.setFace(faceMesh)
             faceMeshGraphicOverlay.setTransformationInfo(image.width, image.height, image.rotationDegrees)
         }
     }

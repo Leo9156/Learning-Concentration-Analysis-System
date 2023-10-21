@@ -26,7 +26,7 @@ class FaceMeshGraphicOverlay(
         strokeWidth = 4.0f
     }
 
-    private var faces: MutableList<FaceMesh>? = null
+    private var face: FaceMesh? = null
 
     private val displayContours = intArrayOf(
         FaceMesh.LEFT_EYE,
@@ -37,11 +37,11 @@ class FaceMeshGraphicOverlay(
         FaceMesh.UPPER_LIP_TOP
     )
 
-    fun setFace(faceMeshes: MutableList<FaceMesh>) {
-        if (faceMeshes.size == 0) {
-            this.faces = null
+    fun setFace(faceMesh: FaceMesh?) {
+        if (faceMesh == null) {
+            this.face = null
         } else {
-            this.faces = faceMeshes
+            this.face = faceMesh
         }
         //invalidate()  // Will call onDraw again
         postInvalidate()
@@ -60,9 +60,8 @@ class FaceMeshGraphicOverlay(
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
 
-        Log.v("FaceMeshGrap", "faces: $faces")
-        faces?.forEach { face ->
-            val points = getContourPoints(face)
+        if (face != null) {
+            val points = getContourPoints(face!!)
 
             for (point in points) {
                 canvas.drawCircle(

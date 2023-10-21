@@ -16,9 +16,7 @@ class NoFaceDetectionHelper(private val context: Context) {
     private var perNoFace = 0f
     private var detectionPeriodMs: Long = 30000
     private var slightlyNoFaceThreshold = 0.15
-    private var severeNoFaceThreshold = 0.3
-    private var isNoFaceOccur = false
-    private var isNoFace = false
+    private var severeNoFaceThreshold = 0.5
 
     // Timer
     private var startNoFaceTimerMs = System.currentTimeMillis()
@@ -166,21 +164,5 @@ class NoFaceDetectionHelper(private val context: Context) {
         resetTotalFrameNumber()
         resetNoFaceFrameNumber()
         startNoFaceTimer()
-    }
-
-    fun setIsNoFaceOccur(flag: Boolean) {
-        this.isNoFaceOccur = flag
-    }
-
-    fun getIsNoFaceOccur(): Boolean {
-        return this.isNoFaceOccur
-    }
-
-    fun setIsNoFace(flag: Boolean) {
-        this.isNoFace = flag
-    }
-
-    fun isNoFace(): Boolean {
-        return this.isNoFace
     }
 }

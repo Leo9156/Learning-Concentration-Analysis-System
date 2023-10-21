@@ -25,13 +25,13 @@ class FaceDetectionGraphicOverlay(
         strokeWidth = 4.0f
     }
 
-    private var faces: List<Face>? = null
+    private var face: Face? = null
 
-    fun setFace(faces: List<Face>) {
-        if (faces.isEmpty()) {
-            this.faces = null
+    fun setFace(face: Face?) {
+        if (face == null) {
+            this.face = null
         } else {
-            this.faces = faces
+            this.face = face
         }
         //invalidate()
         postInvalidate()
@@ -58,18 +58,17 @@ class FaceDetectionGraphicOverlay(
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-
-        faces?.forEach { face ->
-            val x = translateX(face.boundingBox.centerX().toFloat())
-            val y = translateY(face.boundingBox.centerY().toFloat())
+        if (face != null) {
+            val x = translateX(face!!.boundingBox.centerX().toFloat())
+            val y = translateY(face!!.boundingBox.centerY().toFloat())
             Log.v(TAG, "x: $x")
             Log.v(TAG, "y: $y")
             canvas.drawCircle(x, y, 8.0f, dotPaint)
 
-            val left = x - scale(face.boundingBox.width() / 2.0f)
-            val top = y - scale(face.boundingBox.height() / 2.0f)
-            val right = x + scale(face.boundingBox.width() / 2.0f)
-            val bottom = y + scale(face.boundingBox.height() / 2.0f)
+            val left = x - scale(face!!.boundingBox.width() / 2.0f)
+            val top = y - scale(face!!.boundingBox.height() / 2.0f)
+            val right = x + scale(face!!.boundingBox.width() / 2.0f)
+            val bottom = y + scale(face!!.boundingBox.height() / 2.0f)
             canvas.drawRect(left, top, right, bottom, linePaint)
         }
     }
